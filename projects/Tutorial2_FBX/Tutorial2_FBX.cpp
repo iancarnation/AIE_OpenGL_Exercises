@@ -53,7 +53,7 @@ bool Tutorial2_FBX::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(fshader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("./Models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../bin/models/stanford/Buddha.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 

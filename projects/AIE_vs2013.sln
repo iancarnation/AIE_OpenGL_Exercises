@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial3_Textures", "Tutor
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial2_FBX", "Tutorial2_FBX\Tutorial2_FBX.vcxproj", "{EA502ADD-3A94-4605-A4E3-829AA0318B9E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial3_Render_Scene", "Tutorial3_Render_Scene\Tutorial3_Render_Scene.vcxproj", "{9DEE9660-4FAC-4E27-B3CE-8A02ED8426A2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial4_Particles", "Tutorial4_Particles\Tutorial4_Particles.vcxproj", "{11608386-9E1E-4A13-86D3-5181F0B5D30F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{EA502ADD-3A94-4605-A4E3-829AA0318B9E}.Debug|Win32.Build.0 = Debug|Win32
 		{EA502ADD-3A94-4605-A4E3-829AA0318B9E}.Release|Win32.ActiveCfg = Release|Win32
 		{EA502ADD-3A94-4605-A4E3-829AA0318B9E}.Release|Win32.Build.0 = Release|Win32
-		{9DEE9660-4FAC-4E27-B3CE-8A02ED8426A2}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9DEE9660-4FAC-4E27-B3CE-8A02ED8426A2}.Debug|Win32.Build.0 = Debug|Win32
-		{9DEE9660-4FAC-4E27-B3CE-8A02ED8426A2}.Release|Win32.ActiveCfg = Release|Win32
-		{9DEE9660-4FAC-4E27-B3CE-8A02ED8426A2}.Release|Win32.Build.0 = Release|Win32
+		{11608386-9E1E-4A13-86D3-5181F0B5D30F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{11608386-9E1E-4A13-86D3-5181F0B5D30F}.Debug|Win32.Build.0 = Debug|Win32
+		{11608386-9E1E-4A13-86D3-5181F0B5D30F}.Release|Win32.ActiveCfg = Release|Win32
+		{11608386-9E1E-4A13-86D3-5181F0B5D30F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
