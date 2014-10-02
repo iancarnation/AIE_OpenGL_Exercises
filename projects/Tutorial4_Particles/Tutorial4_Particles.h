@@ -23,4 +23,6 @@ protected:
 	glm::mat4	m_projectionMatrix;
 
 	ParticleEmitter* m_emitter;
+
+	unsigned int m_fragShader, m_vertShader, m_programID;
 };

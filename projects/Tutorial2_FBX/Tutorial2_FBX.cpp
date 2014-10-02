@@ -216,8 +216,8 @@ void Tutorial2_FBX::DestroyFBXSceneResource(FBXFile *a_pScene)
 		for (int j = 0; j < FBXMaterial::TextureTypes_Count; j++)
 		{
 			// delete the texture if it was loaded
-			/*if (pMaterial->textureIDs[j] != 0)
-			glDeleteTextures(1, &pMaterial->textureIDs[j]);*/
+			//if (pMaterial->textureIDs[j] != 0)
+			//glDeleteTextures(1, &pMaterial->textureIDs[j]);
 		}
 	}
 

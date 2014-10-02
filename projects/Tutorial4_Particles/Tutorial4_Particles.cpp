@@ -29,15 +29,24 @@ bool Tutorial4_Particles::onCreate(int a_argc, char* a_argv[])
 	// create a perspective projection matrix with a 90 degree field-of-view and widescreen aspect ratio
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, DEFAULT_SCREENWIDTH/(float)DEFAULT_SCREENHEIGHT, 0.1f, 1000.0f);
 
-	// set the clear colour and enable depth testing and backface culling
+	// set the clear color and enable depth testing and backface culling
 	glClearColor(0.25f,0.25f,0.25f,1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
+	// create particle emitter
 	m_emitter = new ParticleEmitter();
 	m_emitter->initialise(1000, 500,
 		0.1f, 0.9f, 1, 5, 0.1f, 1.0f,
 		glm::vec4(1, 1, 0, 1), glm::vec4(1, 0, 0, 1));
+
+	// load shaders and link shader program
+	m_vertShader = Utility::loadShader("../../bin/shaders/particle.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../bin/shaders/particle.frag", GL_FRAGMENT_SHADER);
+
+	// our vertex buffer has 2 properties per-vertex
+	const char* inputs[] = { "Position", "Color" };
+	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 2, inputs);
 
 	return true;
 }
@@ -87,6 +96,11 @@ void Tutorial4_Particles::onDraw()
 
 void Tutorial4_Particles::onDestroy()
 {
+	// delete the shaders
+	glDeleteProgram(m_programID);
+	glDeleteShader(m_vertShader);
+	glDeleteShader(m_fragShader);
+
 	// clean up anything we created
 	Gizmos::destroy();
 }
