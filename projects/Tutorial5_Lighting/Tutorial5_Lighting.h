@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include "FBXFile.h"
 #include "DirectionalLight.h"
+#include "PointLight.h"
 
 // derived application class that wraps up all globals neatly
 class Tutorial5_Lighting : public Application
@@ -32,4 +33,5 @@ protected:
 
 	DirectionalLight m_dLight;
 	glm::vec3 m_aLight;
+	PointLight m_pLight;
 };

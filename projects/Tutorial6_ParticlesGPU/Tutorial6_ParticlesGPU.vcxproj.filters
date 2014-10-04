@@ -15,24 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tutorial5_Lighting.cpp">
+    <ClCompile Include="Tutorial6_ParticlesGPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DirectionalLight.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PointLight.cpp">
+    <ClCompile Include="GPUParticleSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Tutorial5_Lighting.h">
+    <ClInclude Include="Tutorial6_ParticlesGPU.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="DirectionalLight.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PointLight.h">
+    <ClInclude Include="GPUParticleSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

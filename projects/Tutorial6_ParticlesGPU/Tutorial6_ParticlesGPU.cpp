@@ -1,25 +1,25 @@
-#include "Tutorial3_Textures.h"
+#include "Tutorial6_ParticlesGPU.h"
 #include "Gizmos.h"
 #include "Utilities.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
-#include <stb_image.h>
+
 
 #define DEFAULT_SCREENWIDTH 1280
 #define DEFAULT_SCREENHEIGHT 720
 
-Tutorial3_Textures::Tutorial3_Textures()
+Tutorial6_ParticlesGPU::Tutorial6_ParticlesGPU()
 {
 
 }
 
-Tutorial3_Textures::~Tutorial3_Textures()
+Tutorial6_ParticlesGPU::~Tutorial6_ParticlesGPU()
 {
 
 }
 
-bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[]) 
+bool Tutorial6_ParticlesGPU::onCreate(int a_argc, char* a_argv[]) 
 {
 	// initialise the Gizmos helper class
 	Gizmos::create();
@@ -35,8 +35,6 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// texture --------------------------
-
 	// load image data
 	int width = 0;
 	int height = 0;
@@ -47,8 +45,8 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 	printf("Width: %i Height: %i Format: %i\n", width, height, format);
 
 	// create OpenGL texture handle
-	glGenTextures(1, &m_texture);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glGenTextures(1, &g_texture);
+	glBindTexture(GL_TEXTURE_2D, g_texture);
 
 	// set pixel data for texture
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
@@ -64,21 +62,15 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 
 	// -----------------------------------
 
-	// create a simple plane to render
-	Utility::build3DPlane(10, m_vao, m_vbo, m_ibo);
-
-	// load shaders and link shader program
-	m_vertShader = Utility::loadShader("../../bin/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
-	m_fragShader = Utility::loadShader("../../bin/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
-
-	// our vertex buffer has 3 properties per-vertex
-	const char* inputs[] = { "position", "colour", "textureCoordinate" };
-	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, inputs);
+	m_emitter = new GPUParticleEmitter();
+	m_emitter->initialize(10,
+		0.1f, 20.0f, 25, 100, 0.1f, 3.0f,
+		glm::vec4(1, 1, 0, 1), glm::vec4(1, 0, 0, 1), g_texture);
 
 	return true;
 }
 
-void Tutorial3_Textures::onUpdate(float a_deltaTime) 
+void Tutorial6_ParticlesGPU::onUpdate(float a_deltaTime) 
 {
 	// update our camera matrix using the keyboard/mouse
 	Utility::freeMovement( m_cameraMatrix, a_deltaTime, 10 );
@@ -99,12 +91,13 @@ void Tutorial3_Textures::onUpdate(float a_deltaTime)
 						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
 	}
 
+
 	// quit our application when escape is pressed
 	if (glfwGetKey(m_window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		quit();
 }
 
-void Tutorial3_Textures::onDraw() 
+void Tutorial6_ParticlesGPU::onDraw() 
 {
 	// clear the backbuffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -115,55 +108,23 @@ void Tutorial3_Textures::onDraw()
 	// draw the gizmos from this frame
 	Gizmos::draw(m_projectionMatrix, viewMatrix);
 
-	// bind shader to the GPU
-	glUseProgram(m_programID);
-
-	// fetch locations of the view and projection matrices and bind them
-	unsigned int location = glGetUniformLocation(m_programID, "view");
-	glUniformMatrix4fv(location, 1, false, glm::value_ptr(viewMatrix));
-
-	location = glGetUniformLocation(m_programID, "projection");
-	glUniformMatrix4fv(location, 1, false, glm::value_ptr(m_projectionMatrix));
-
-	// activate texture slot 0 and bind our texture to it
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
-
-	// fetch the location of the texture sampler and bind it to 0
-	location = glGetUniformLocation(m_programID, "textureMap");
-	glUniform1i(location, 0);
-
-	// bind out 3D plane and draw it
-	glBindVertexArray(m_vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	m_emitter->draw(m_cameraMatrix, m_projectionMatrix);
 }
 
-void Tutorial3_Textures::onDestroy()
+void Tutorial6_ParticlesGPU::onDestroy()
 {
-	// delete the data for the plane
-	glDeleteVertexArrays(1, &m_vao);
-	glDeleteBuffers(1, &m_vbo);
-	glDeleteBuffers(1, &m_ibo);
-
-	// delete the texture
-	glDeleteTextures(1, &m_texture);
-
-	// delete the shader
-	glDeleteProgram(m_programID);
-	glDeleteShader(m_vertShader);
-	glDeleteShader(m_fragShader);
-
 	// clean up anything we created
 	Gizmos::destroy();
+
 }
 
 // main that controls the creation/destruction of an application
 int main(int argc, char* argv[])
 {
 	// explicitly control the creation of our application
-	Application* app = new Tutorial3_Textures();
+	Application* app = new Tutorial6_ParticlesGPU();
 	
-	if (app->create("AIE - Tutorial3_Textures",DEFAULT_SCREENWIDTH,DEFAULT_SCREENHEIGHT,argc,argv) == true)
+	if (app->create("AIE - Tutorial6_ParticlesGPU",DEFAULT_SCREENWIDTH,DEFAULT_SCREENHEIGHT,argc,argv) == true)
 		app->run();
 		
 	// explicitly control the destruction of our application

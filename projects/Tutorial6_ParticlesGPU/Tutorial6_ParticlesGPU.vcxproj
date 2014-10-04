@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A248C2D5-3B1D-47A3-BCC4-B98C7D2AC2B2}</ProjectGuid>
-    <RootNamespace>Tutorial5_Lighting</RootNamespace>
+    <ProjectGuid>{CAADB439-C592-4FA4-A5D7-19CEE3BC00EE}</ProjectGuid>
+    <RootNamespace>Tutorial6_ParticlesGPU</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -39,8 +39,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)../inc;$(SolutionDir)../dep/soil/src;$(SolutionDir)../dep/glfw/include;$(SolutionDir)../dep/glew/include;$(SolutionDir)../dep/glm;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)../lib/vs2013;$(SolutionDir)../dep/soil/lib/vs2012;$(SolutionDir)../dep/glew/lib/Release/Win32;$(SolutionDir)../dep/glfw/lib-msvc110;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)../inc;$(SolutionDir)../dep/soil/src;$(SolutionDir)../dep/glfw/include;$(SolutionDir)../dep/glew/include;$(SolutionDir)../dep/glm;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(SolutionDir)../dep/stb</IncludePath>
+    <LibraryPath>$(SolutionDir)../lib/vs2013;$(SolutionDir)../dep/soil/lib/vs2012;$(SolutionDir)../dep/glew/lib/Release/Win32;$(SolutionDir)../dep/glfw/lib-msvc110;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(SolutionDir)../dep/stb</LibraryPath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,14 +75,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DirectionalLight.cpp" />
-    <ClCompile Include="PointLight.cpp" />
-    <ClCompile Include="Tutorial5_Lighting.cpp" />
+    <ClCompile Include="GPUParticleSystem.cpp" />
+    <ClCompile Include="Tutorial6_ParticlesGPU.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DirectionalLight.h" />
-    <ClInclude Include="PointLight.h" />
-    <ClInclude Include="Tutorial5_Lighting.h" />
+    <ClInclude Include="GPUParticleSystem.h" />
+    <ClInclude Include="Tutorial6_ParticlesGPU.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

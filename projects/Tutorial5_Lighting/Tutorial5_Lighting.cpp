@@ -53,6 +53,11 @@ bool Tutorial5_Lighting::onCreate(int a_argc, char* a_argv[])
 	// ambient light
 	m_aLight = glm::vec3(0.1, 0.1, 0.1);
 
+	// point light
+	glm::vec3 pLightPosition(0, 1, 0);
+	glm::vec3 pLightColor(0.4, 0.8, 0.5);
+	m_pLight = PointLight(pLightPosition, pLightColor);
+
 	return true;
 }
 
@@ -106,6 +111,7 @@ void Tutorial5_Lighting::onDraw()
 	location = glGetUniformLocation(m_programID, "projection");
 	glUniformMatrix4fv(location, 1, false, glm::value_ptr(m_projectionMatrix));
 
+	// Directional Light -------------------------------------------------
 	location = glGetUniformLocation(m_programID, "lightAmbient");
 	glUniform3fv(location, 1, glm::value_ptr(m_aLight));
 
@@ -114,6 +120,17 @@ void Tutorial5_Lighting::onDraw()
 
 	location = glGetUniformLocation(m_programID, "lightColor");
 	glUniform3fv(location, 1, glm::value_ptr(m_dLight.m_v3Color));
+
+	location = glGetUniformLocation(m_programID, "specularColor");
+	glUniform3fv(location, 1, glm::value_ptr(m_dLight.m_v3SpecularColor));
+
+	// Point Light --------------------------------------------------------
+
+
+
+	location = glGetUniformLocation(m_programID, "cameraPosition");
+	glUniform3fv(location, 1, glm::value_ptr(m_cameraMatrix[3]));
+
 
 	// bind our vertex array object and draw the mesh
 	for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i)
