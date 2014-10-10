@@ -41,7 +41,7 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 	int width = 0;
 	int height = 0;
 	int format = 0;
-	unsigned char* pixelData = stbi_load("../../bin/textures/particle_green.png",
+	unsigned char* pixelData = stbi_load("../../assets/textures/particle_green.png",
 		&width, &height, &format, 4);
 
 	printf("Width: %i Height: %i Format: %i\n", width, height, format);
@@ -68,8 +68,8 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 	Utility::build3DPlane(10, m_vao, m_vbo, m_ibo);
 
 	// load shaders and link shader program
-	m_vertShader = Utility::loadShader("../../bin/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
-	m_fragShader = Utility::loadShader("../../bin/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
+	m_vertShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
 
 	// our vertex buffer has 3 properties per-vertex
 	const char* inputs[] = { "position", "colour", "textureCoordinate" };

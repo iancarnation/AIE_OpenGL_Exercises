@@ -43,7 +43,7 @@ bool Tutorial7_MultipleTextures::onCreate(int a_argc, char* a_argv[])
 	int width = 0;
 	int height = 0;
 	int format = 0;
-	unsigned char* pixelData = stbi_load("../../bin/textures/decay.png",
+	unsigned char* pixelData = stbi_load("../../assets/textures/decay.png",
 		&width, &height, &format, 4);
 
 	printf("Width: %i Height: %i Format: %i\n", width, height, format);
@@ -70,7 +70,7 @@ bool Tutorial7_MultipleTextures::onCreate(int a_argc, char* a_argv[])
 	width = 0;
 	height = 0;
 	format = 0;
-	pixelData = stbi_load("../../bin/textures/soulspear_metalic_diffuse.png",
+	pixelData = stbi_load("../../assets/textures/soulspear_metalic_diffuse.png",
 		&width, &height, &format, 4);
 
 	printf("Width: %i Height: %i Format: %i\n", width, height, format);
@@ -98,8 +98,8 @@ bool Tutorial7_MultipleTextures::onCreate(int a_argc, char* a_argv[])
 	const char* aszOutputs[] = { "outColor" };
 
 	// load shader internally calls glCreateShader...
-	GLuint vshader = Utility::loadShader("../../bin/shaders/Tutorial2_FBX.vert", GL_VERTEX_SHADER);
-	GLuint fshader = Utility::loadShader("../../bin/shaders/MultipleTextures_Example.frag", GL_FRAGMENT_SHADER);
+	GLuint vshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.vert", GL_VERTEX_SHADER);
+	GLuint fshader = Utility::loadShader("../../assets/shaders/MultipleTextures_Example.frag", GL_FRAGMENT_SHADER);
 
 	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 3, aszInputs, 1, aszOutputs);
 
@@ -108,7 +108,7 @@ bool Tutorial7_MultipleTextures::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(fshader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("../../bin/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 

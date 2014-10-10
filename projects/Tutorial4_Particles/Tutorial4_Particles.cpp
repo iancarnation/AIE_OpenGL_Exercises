@@ -41,8 +41,8 @@ bool Tutorial4_Particles::onCreate(int a_argc, char* a_argv[])
 		glm::vec4(1, 1, 0, 1), glm::vec4(1, 0, 0, 1));
 
 	// load shaders and link shader program
-	m_vertShader = Utility::loadShader("../../bin/shaders/particle.vert", GL_VERTEX_SHADER);
-	m_fragShader = Utility::loadShader("../../bin/shaders/particle.frag", GL_FRAGMENT_SHADER);
+	m_vertShader = Utility::loadShader("../../assets/shaders/particle.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../assets/shaders/particle.frag", GL_FRAGMENT_SHADER);
 
 	// our vertex buffer has 2 properties per-vertex
 	const char* inputs[] = { "Position", "Color" };

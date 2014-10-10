@@ -39,7 +39,7 @@ bool Tutorial6_ParticlesGPU::onCreate(int a_argc, char* a_argv[])
 	int width = 0;
 	int height = 0;
 	int format = 0;
-	unsigned char* pixelData = stbi_load("../../bin/textures/particle_green.png",
+	unsigned char* pixelData = stbi_load("../../assets/textures/particle_green.png",
 		&width, &height, &format, 4);
 
 	printf("Width: %i Height: %i Format: %i\n", width, height, format);

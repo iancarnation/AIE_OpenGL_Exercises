@@ -95,9 +95,9 @@ void GPUParticleEmitter::createBuffers()
 
 void GPUParticleEmitter::createDrawShader()
 {
-	unsigned int vs = Utility::loadShader("../../bin/shaders/particleGPU.vert", GL_VERTEX_SHADER);
-	unsigned int fs = Utility::loadShader("../../bin/shaders/particleGPU.frag", GL_FRAGMENT_SHADER);
-	unsigned int gs = Utility::loadShader("../../bin/shaders/particleGPU.geom", GL_GEOMETRY_SHADER);
+	unsigned int vs = Utility::loadShader("../../assets/shaders/particleGPU.vert", GL_VERTEX_SHADER);
+	unsigned int fs = Utility::loadShader("../../assets/shaders/particleGPU.frag", GL_FRAGMENT_SHADER);
+	unsigned int gs = Utility::loadShader("../../assets/shaders/particleGPU.geom", GL_GEOMETRY_SHADER);
 	const char* inputs[] = { "Position", "Velocity", "Lifetime", "Lifespan" };
 	m_drawShader = Utility::createProgram(vs, 0, 0, gs, fs, 4, inputs);
 
@@ -133,7 +133,7 @@ void GPUParticleEmitter::createDrawShader()
 void GPUParticleEmitter::createUpdateShader()
 {
 	// load a text file into an unsigned char buffer
-	unsigned char*source = Utility::fileToBuffer("../../bin/shaders/particleGPUUpdate.vert");
+	unsigned char*source = Utility::fileToBuffer("../../assets/shaders/particleGPUUpdate.vert");
 
 	// create a shader
 	unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
@@ -232,7 +232,7 @@ void GPUParticleEmitter::draw(const glm::mat4& a_cameraTransform, const glm::mat
 //	int width = 0;
 //	int height = 0;
 //	int format = 0;
-//	unsigned char* pixelData = stbi_load("../../bin/textures/particle_green.png",
+//	unsigned char* pixelData = stbi_load("../../assets/textures/particle_green.png",
 //		&width, &height, &format, 4);
 //
 //	printf("Width: %i Height: %i Format: %i\n", width, height, format);

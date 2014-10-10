@@ -55,7 +55,7 @@ bool Tutorial7_MultipleTextures_NormalMap::onCreate(int a_argc, char* a_argv[])
 	//int width = 0;
 	//int height = 0;
 	//int format = 0;
-	//unsigned char* pixelData = stbi_load("../../bin/textures/decay.png",
+	//unsigned char* pixelData = stbi_load("../../assets/textures/decay.png",
 	//	&width, &height, &format, 4);
 
 	//printf("Width: %i Height: %i Format: %i\n", width, height, format);
@@ -83,8 +83,8 @@ bool Tutorial7_MultipleTextures_NormalMap::onCreate(int a_argc, char* a_argv[])
 	const char* aszOutputs[] = { "outColor" };
 
 	// load shader internally calls glCreateShader...
-	GLuint vshader = Utility::loadShader("../../bin/shaders/MultipleTextures_NormalMap.vert", GL_VERTEX_SHADER);
-	GLuint fshader = Utility::loadShader("../../bin/shaders/MultipleTextures_NormalMap.frag", GL_FRAGMENT_SHADER);
+	GLuint vshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.vert", GL_VERTEX_SHADER);
+	GLuint fshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.frag", GL_FRAGMENT_SHADER);
 
 	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 3, aszInputs, 1, aszOutputs);
 
@@ -93,7 +93,7 @@ bool Tutorial7_MultipleTextures_NormalMap::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(fshader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("../../bin/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 

@@ -35,13 +35,13 @@ bool Tutorial5_Lighting::onCreate(int a_argc, char* a_argv[])
 	glEnable(GL_CULL_FACE);
 
 	// load shaders and link shader program
-	m_vertShader = Utility::loadShader("../../bin/shaders/lit.vert", GL_VERTEX_SHADER);
-	m_fragShader = Utility::loadShader("../../bin/shaders/lit.frag", GL_FRAGMENT_SHADER);	
+	m_vertShader = Utility::loadShader("../../assets/shaders/lit.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../assets/shaders/lit.frag", GL_FRAGMENT_SHADER);	
 	const char* inputs[] = { "Position", "Normal" };
 	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 2, inputs);
 	
 	m_fbx = new FBXFile();
-	m_fbx->load("../../bin/models/stanford/Bunny.fbx");
+	m_fbx->load("../../assets/models/stanford/Bunny.fbx");
 
 	createOpenGLBuffers(m_fbx);
 
