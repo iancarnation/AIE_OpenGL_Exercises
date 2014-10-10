@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial7_MultipleTextures"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial7_MultipleTextures-NormalMap", "Tutorial7_MultipleTextures-NormalMap\Tutorial7_MultipleTextures-NormalMap.vcxproj", "{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial7_MultipleTextures-CubeMap", "Tutorial7_MultipleTextures-CubeMap\Tutorial7_MultipleTextures-CubeMap.vcxproj", "{7EBB12C1-3422-4AED-8844-F37693457433}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -63,6 +65,10 @@ Global
 		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Debug|Win32.Build.0 = Debug|Win32
 		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Release|Win32.ActiveCfg = Release|Win32
 		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Release|Win32.Build.0 = Release|Win32
+		{7EBB12C1-3422-4AED-8844-F37693457433}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7EBB12C1-3422-4AED-8844-F37693457433}.Debug|Win32.Build.0 = Debug|Win32
+		{7EBB12C1-3422-4AED-8844-F37693457433}.Release|Win32.ActiveCfg = Release|Win32
+		{7EBB12C1-3422-4AED-8844-F37693457433}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
