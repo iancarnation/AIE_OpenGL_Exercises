@@ -17,6 +17,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial5_Lighting", "Tutor
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial6_ParticlesGPU", "Tutorial6_ParticlesGPU\Tutorial6_ParticlesGPU.vcxproj", "{CAADB439-C592-4FA4-A5D7-19CEE3BC00EE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial7_MultipleTextures", "Tutorial7_MultipleTextures\Tutorial7_MultipleTextures.vcxproj", "{5828425B-786A-4AE9-801A-0F141CEB4A17}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial7_MultipleTextures-NormalMap", "Tutorial7_MultipleTextures-NormalMap\Tutorial7_MultipleTextures-NormalMap.vcxproj", "{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -51,6 +55,14 @@ Global
 		{CAADB439-C592-4FA4-A5D7-19CEE3BC00EE}.Debug|Win32.Build.0 = Debug|Win32
 		{CAADB439-C592-4FA4-A5D7-19CEE3BC00EE}.Release|Win32.ActiveCfg = Release|Win32
 		{CAADB439-C592-4FA4-A5D7-19CEE3BC00EE}.Release|Win32.Build.0 = Release|Win32
+		{5828425B-786A-4AE9-801A-0F141CEB4A17}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5828425B-786A-4AE9-801A-0F141CEB4A17}.Debug|Win32.Build.0 = Debug|Win32
+		{5828425B-786A-4AE9-801A-0F141CEB4A17}.Release|Win32.ActiveCfg = Release|Win32
+		{5828425B-786A-4AE9-801A-0F141CEB4A17}.Release|Win32.Build.0 = Release|Win32
+		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Debug|Win32.Build.0 = Debug|Win32
+		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Release|Win32.ActiveCfg = Release|Win32
+		{BF6FB829-4587-4A64-B0D1-44ACBD4E26FD}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
