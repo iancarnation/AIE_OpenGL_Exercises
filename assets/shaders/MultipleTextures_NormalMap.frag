@@ -11,8 +11,6 @@ uniform sampler2D SpecularTexture;
 uniform vec3 AmbientLightColor;
 uniform vec3 LightColor;
 
-uniform int toggle;
-
 out vec4 outColor;
 
 void main()
@@ -39,7 +37,9 @@ void main()
 
 	// Add the diffuse contribution blended with the standard texture lookup and add in the 
 	// ambient light on top
-	finalColor.rgb = (diffuseIntensity * LightColor.rgb) * diffuseColor.rgb + ambientColor.rgb;
+	//finalColor.rgb = (diffuseIntensity * LightColor.rgb) * diffuseColor.rgb + ambientColor.rgb;
+	//finalColor.rgb = (diffuseIntensity * diffuseColor.rgb) + ambientColor.rgb;
+	finalColor = (diffuseIntensity * diffuseColor) + ambientColor;
 
 	// specular highlight
 	vec3 reflection = normalize(reflect(-normalize(vLightDir), N));

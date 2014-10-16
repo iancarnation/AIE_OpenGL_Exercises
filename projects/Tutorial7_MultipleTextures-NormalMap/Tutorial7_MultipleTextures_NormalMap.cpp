@@ -5,6 +5,10 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 #include <stb_image.h>
+#include <math.h>
+
+using std::sin;
+using std::cos;
 
 #define DEFAULT_SCREENWIDTH 1280
 #define DEFAULT_SCREENHEIGHT 720
@@ -39,7 +43,7 @@ bool Tutorial7_MultipleTextures_NormalMap::onCreate(int a_argc, char* a_argv[])
 	m_lightPosition = glm::vec3(0, 1, 0);
 
 	// set light colors
-	m_ambientLightColor = glm::vec3(0,0,0);
+	m_ambientLightColor = glm::vec3(0.8,0.1,0.3);
 	m_lightColor = glm::vec3(1,1,1);
 
 	// set the clear colour and enable depth testing and backface culling
@@ -86,7 +90,7 @@ bool Tutorial7_MultipleTextures_NormalMap::onCreate(int a_argc, char* a_argv[])
 	GLuint vshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.vert", GL_VERTEX_SHADER);
 	GLuint fshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.frag", GL_FRAGMENT_SHADER);
 
-	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 3, aszInputs, 1, aszOutputs);
+	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 5, aszInputs, 1, aszOutputs);
 
 	// free our shader once we built our program
 	glDeleteShader(vshader);
@@ -122,6 +126,9 @@ void Tutorial7_MultipleTextures_NormalMap::onUpdate(float a_deltaTime)
 	}
 
 	UpdateFBXSceneResource(m_fbx);
+
+	m_lightPosition.z = sin(glfwGetTime()) * 2.5f;
+	m_lightPosition.x = cos(glfwGetTime()) * 2.5f;
 
 	// quit our application when escape is pressed
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -230,6 +237,7 @@ void Tutorial7_MultipleTextures_NormalMap::InitFBXSceneResource(FBXFile *a_pScen
 		glBindVertexArray(0);
 	}
 }
+
 void Tutorial7_MultipleTextures_NormalMap::DestroyFBXSceneResource(FBXFile *a_pScene)
 {
 	// how many meshes and materials are stored within the fbx file
@@ -288,7 +296,7 @@ void Tutorial7_MultipleTextures_NormalMap::RenderFBXSceneResource(FBXFile *a_pSc
 	GLint uMV = glGetUniformLocation(m_shader, "MV");
 	GLint uNormalMatrix = glGetUniformLocation(m_shader, "NormalMatrix");
 
-	GLint uLightPosition = glGetUniformLocation(m_shader, "LighPosition");
+	GLint uLightPosition = glGetUniformLocation(m_shader, "LightPosition");
 
 	// frag ---
 	GLint uDiffuseTexture = glGetUniformLocation(m_shader, "DiffuseTexture");
@@ -298,7 +306,7 @@ void Tutorial7_MultipleTextures_NormalMap::RenderFBXSceneResource(FBXFile *a_pSc
 	GLint uAmbientLightColor = glGetUniformLocation(m_shader, "AmbientLightColor");
 	GLint uLightColor = glGetUniformLocation(m_shader, "LightColor");
 
-	GLint uToggle = glGetUniformLocation(m_shader, "toggle");
+	//GLint uToggle = glGetUniformLocation(m_shader, "toggle");
 
 	// for each mesh in the model
 	for (int i = 0; i < a_pScene->getMeshCount(); ++i)
@@ -310,14 +318,15 @@ void Tutorial7_MultipleTextures_NormalMap::RenderFBXSceneResource(FBXFile *a_pSc
 		OGL_FBX_RenderData *ro = (OGL_FBX_RenderData *)mesh->m_userData;
 
 		// calculate matrices ** right spot for this?? **
-		m_MVP = a_projection * a_view * mesh->m_globalTransform;
-		m_MV = a_view * mesh->m_globalTransform;
+		m_MVP = a_projection * a_view * (mesh->m_globalTransform);
+		m_MV = a_view * (mesh->m_globalTransform);
 		m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_MV)));
 
 		// send matrices to shader
 		glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(m_MVP));
 		glUniformMatrix4fv(uMV, 1, false, glm::value_ptr(m_MV));
-		glUniformMatrix4fv(uNormalMatrix, 1, false, glm::value_ptr(m_NormalMatrix));
+
+		glUniformMatrix3fv(uNormalMatrix, 1, false, glm::value_ptr(m_NormalMatrix));
 
 		// send light position to shader
 		glUniform3fv(uLightPosition, 1, glm::value_ptr(m_lightPosition));

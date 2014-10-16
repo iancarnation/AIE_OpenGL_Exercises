@@ -43,8 +43,8 @@ bool Tutorial2_FBX::onCreate(int a_argc, char* a_argv[])
 	const char* aszOutputs[] = { "outColor" };
 
 	// load shader internally calls glCreateShader...
-	GLuint vshader = Utility::loadShader("./shaders/Tutorial2_FBX.vert", GL_VERTEX_SHADER);
-	GLuint fshader = Utility::loadShader("./shaders/Tutorial2_FBX.frag", GL_FRAGMENT_SHADER);
+	GLuint vshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.vert", GL_VERTEX_SHADER);
+	GLuint fshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.frag", GL_FRAGMENT_SHADER);
 
 	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 3, aszInputs, 1, aszOutputs);
 
@@ -53,7 +53,7 @@ bool Tutorial2_FBX::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(fshader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("../../assets/models/stanford/Buddha.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 
@@ -253,7 +253,7 @@ void Tutorial2_FBX::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, 
 		// Bind the texture to one of the ActiveTextures
 		// if your shader supported multiple textures, you would bind each texture to a new Active Texture ID here
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
+		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::SpecularTexture]->handle);
 
 		// reset back to the default active texture
 		glActiveTexture(GL_TEXTURE0);
