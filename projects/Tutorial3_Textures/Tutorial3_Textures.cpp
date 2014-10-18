@@ -41,8 +41,19 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 	int width = 0;
 	int height = 0;
 	int format = 0;
-	unsigned char* pixelData = stbi_load("../../assets/textures/particle_green.png",
-		&width, &height, &format, 4);
+	unsigned char* pixelData = stbi_load("../../assets/textures/rock_displacement.tga",
+		&width, &height, &format, STBI_default);
+
+	printf("Width: %i Height: %i Format: %i\n", width, height, format);
+
+	// convert the stbi format to the actual GL code
+	switch (format)
+	{
+	case STBI_grey: format = GL_LUMINANCE; break;
+	case STBI_grey_alpha: format = GL_LUMINANCE_ALPHA; break;
+	case STBI_rgb: format = GL_RGB; break;
+	case STBI_rgb_alpha: format = GL_RGBA; break;
+	};
 
 	printf("Width: %i Height: %i Format: %i\n", width, height, format);
 
@@ -51,7 +62,7 @@ bool Tutorial3_Textures::onCreate(int a_argc, char* a_argv[])
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 
 	// set pixel data for texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixelData);
 
 	// set filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

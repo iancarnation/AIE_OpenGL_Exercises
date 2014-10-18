@@ -20,10 +20,11 @@ protected:
 
 	glm::mat4	m_cameraMatrix;
 	glm::mat4	m_projectionMatrix;
+	glm::mat4	m_global;
 
-	unsigned int m_texture;
+	unsigned int m_texture, m_displacement;
 
 	unsigned int m_vao, m_vbo, m_ibo;
 
-	unsigned int m_shader, m_displacement;
+	unsigned int m_programID, m_vertShader, m_fragShader;
 };

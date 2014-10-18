@@ -7,7 +7,7 @@ in vec3 position[];
 in float lifetime[];
 in float lifespan[];
 
-//out vec4 Color;
+out vec4 Color;
 out vec2 TexCoord;
 
 uniform mat4 projectionView;
@@ -16,13 +16,13 @@ uniform mat4 cameraTransform;
 uniform float sizeStart;
 uniform float sizeEnd;
 
-//uniform vec4 colorStart;
-//uniform vec4 colorEnd;
+uniform vec4 colorStart;
+uniform vec4 colorEnd;
 
 void main()
 {
 	// interpolate color
-	//Color = mix(colorStart, colorEnd, lifetime[0] / lifespan[0]);
+	Color = mix(colorStart, colorEnd, lifetime[0] / lifespan[0]);
 	
 	// calculate the size and create the corners of a quad
 	float halfSize = mix(sizeStart, sizeEnd, lifetime[0] / lifespan[0] ) * 0.5f;

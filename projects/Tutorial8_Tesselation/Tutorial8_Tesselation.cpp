@@ -41,6 +41,7 @@ bool Tutorial8_Tesselation::onCreate(int a_argc, char* a_argv[])
 	unsigned char* data = nullptr;
 
 	data = stbi_load("../../assets/textures/rock_diffuse.tga", &width, &height, &format, STBI_default);
+	printf("Width: %i Height: %i Format: %i\n", width, height, format);
 
 	// convert the stbi format to the actual GL code
 	switch (format)
@@ -50,6 +51,8 @@ bool Tutorial8_Tesselation::onCreate(int a_argc, char* a_argv[])
 	case STBI_rgb: format = GL_RGB; break;
 	case STBI_rgb_alpha: format = GL_RGBA; break;
 	};
+
+	printf("Width: %i Height: %i Format: %i\n", width, height, format);
 
 	glGenTextures(1, &m_texture);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -57,7 +60,9 @@ bool Tutorial8_Tesselation::onCreate(int a_argc, char* a_argv[])
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	data = stbi_load("../../bin/textures/rock_displacement.tga", &width, &height, &format, STBI_default);
+	data = stbi_load("../../assets/textures/rock_displacement.tga", &width, &height, &format, STBI_default);
+	
+	printf("Width: %i Height: %i Format: %i\n", width, height, format);
 
 	// convert the stbi format to the actual GL code
 	switch (format)
@@ -68,17 +73,19 @@ bool Tutorial8_Tesselation::onCreate(int a_argc, char* a_argv[])
 	case STBI_rgb_alpha: format = GL_RGBA; break;
 	};
 
+	printf("Width: %i Height: %i Format: %i\n", width, height, format);
+
 	glGenTextures(1, &m_displacement);
 	glBindTexture(GL_TEXTURE_2D, m_displacement);
 	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	unsigned int vs = Utility::loadShader("../../assets/shaders/displace.vert", GL_VERTEX_SHADER);
-	unsigned int fs = Utility::loadShader("../../assets/shaders/displace.frag", GL_FRAGMENT_SHADER);
-	m_shader = Utility::createProgram(vs, 0, 0, 0, fs);
-	glDeleteShader(vs);
-	glDeleteShader(fs);
+	m_vertShader = Utility::loadShader("../../assets/shaders/displace.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../assets/shaders/displace.frag", GL_FRAGMENT_SHADER);
+	const char* inputs[] = { "position", "texCoord" };
+	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 2, inputs);
+	
 
 	return true;
 }
@@ -121,19 +128,23 @@ void Tutorial8_Tesselation::onDraw()
 	Gizmos::draw(m_projectionMatrix, viewMatrix);
 
 	// bind shader to the GPU
-	glUseProgram(m_shader);
+	glUseProgram(m_programID);
 
 	// fetch locations of the view and projection matrices and bind them
-	unsigned int location = glGetUniformLocation(m_shader, "projectionView");
-	glUniformMatrix4fv(location, 1, false, glm::value_ptr(viewMatrix * m_projectionMatrix));
+	GLuint uProjectionView = glGetUniformLocation(m_programID, "projectionView");
+	GLuint uTextureMap = glGetUniformLocation(m_programID, "textureMap");
+	GLuint uGlobal = glGetUniformLocation(m_programID, "global");
 
 	// activate texture slot 0 and bind our texture to it
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 
 	// fetch the location of the texture sampler and bind it to 0
-	location = glGetUniformLocation(m_shader, "textureMap");
-	glUniform1i(location, 0);
+	glUniform1i(uTextureMap, 0);
+
+	// bind other uniforms
+	glUniformMatrix4fv(uProjectionView, 1, false, glm::value_ptr(m_projectionMatrix * viewMatrix));
+	glUniformMatrix4fv(uGlobal, 1, false, glm::value_ptr(m_global));
 
 	// bind 3D plane and draw it
 	glBindVertexArray(m_vao);
@@ -144,6 +155,9 @@ void Tutorial8_Tesselation::onDestroy()
 {
 	// clean up anything we created
 	Gizmos::destroy();
+
+	glDeleteShader(m_vertShader);
+	glDeleteShader(m_fragShader);
 }
 
 // main that controls the creation/destruction of an application
