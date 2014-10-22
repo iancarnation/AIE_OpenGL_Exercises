@@ -37,6 +37,9 @@ bool Tutorial8_Tesselation::onCreate(int a_argc, char* a_argv[])
 
 	Utility::build3DPlane(10, m_vao, m_vbo, m_ibo);
 
+	/*int width = 0;
+	int height = 0;
+	int format = 0;*/
 	int width, height, format;
 	unsigned char* data = nullptr;
 
@@ -81,11 +84,12 @@ bool Tutorial8_Tesselation::onCreate(int a_argc, char* a_argv[])
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	delete[] data;
+
 	m_vertShader = Utility::loadShader("../../assets/shaders/displace.vert", GL_VERTEX_SHADER);
 	m_fragShader = Utility::loadShader("../../assets/shaders/displace.frag", GL_FRAGMENT_SHADER);
-	const char* inputs[] = { "position", "texCoord" };
-	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 2, inputs);
-	
+
+	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader);
 
 	return true;
 }
