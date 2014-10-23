@@ -15,7 +15,7 @@ out vec4 outColor;
 
 void main()
 {
-	vec4 finalColor = vec4(0,0,0,0);
+	vec4 finalColor = vec4(0,0,0,1);
 
 	// get the color from our textures
 	vec3 normalColor = texture(NormalTexture, TexCoord).xyz;
@@ -42,12 +42,12 @@ void main()
 	finalColor = (diffuseIntensity * diffuseColor) + ambientColor;
 
 	// specular highlight
-	vec3 reflection = normalize(reflect(-normalize(LightDir), N));
-	float spec = max(0.0, dot(reflection, N));
-	float fSpec = pow(spec, 5.0);
+	// vec3 reflection = normalize(reflect(-normalize(LightDir), N));
+	// float spec = max(0.0, dot(reflection, N));
+	// float fSpec = pow(spec, 5.0);
 
-	// apply the specular
-	finalColor.rgb += vec3(fSpec, fSpec, fSpec) * specularColor.xyz;
+	// // apply the specular
+	// finalColor.rgb += vec3(fSpec, fSpec, fSpec) * specularColor.xyz;
 
 	outColor = finalColor;
 }

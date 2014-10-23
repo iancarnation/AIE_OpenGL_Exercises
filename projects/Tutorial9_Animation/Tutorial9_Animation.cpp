@@ -35,7 +35,7 @@ bool Tutorial9_Animation::onCreate(int a_argc, char* a_argv[])
 	m_lightPosition = glm::vec3(0, 1, 0);
 
 	// set light colors
-	m_ambientLightColor = glm::vec3(0.8, 0.1, 0.3);
+	m_ambientLightColor = glm::vec3(1,1,1);
 	m_lightColor = glm::vec3(1, 1, 1);
 
 	// set the clear colour and enable depth testing and backface culling
@@ -44,8 +44,8 @@ bool Tutorial9_Animation::onCreate(int a_argc, char* a_argv[])
 	glEnable(GL_CULL_FACE);
 
 	// load shader internally calls glCreateShader...
-	m_vertShader = Utility::loadShader("../../assets/shaders/animation.vert", GL_VERTEX_SHADER);
-	m_fragShader= Utility::loadShader("../../assets/shaders/animation.frag", GL_FRAGMENT_SHADER);
+	m_vertShader = Utility::loadShader("../../assets/shaders/animation2.vert", GL_VERTEX_SHADER);
+	m_fragShader= Utility::loadShader("../../assets/shaders/animation2.frag", GL_FRAGMENT_SHADER);
 
 	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader);
 
@@ -250,6 +250,10 @@ void Tutorial9_Animation::UpdateFBXSceneResource(FBXFile *a_pScene)
 
 void Tutorial9_Animation::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, glm::mat4 a_projection)
 {
+	// enable transparent blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	// activate a shader
 	glUseProgram(m_programID);
 
@@ -292,9 +296,6 @@ void Tutorial9_Animation::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::SpecularTexture]->handle);
 
-		// reset back to the default active texture
-		glActiveTexture(GL_TEXTURE0);
-
 		// TELL THE SHADER WHICH TEXTURE TO USE
 		glUniform1i(uDiffuseTexture, 1);
 		glUniform1i(uNormalTexture, 2);
@@ -317,13 +318,16 @@ void Tutorial9_Animation::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_
 		glUniform3fv(uAmbientLightColor, 1, glm::value_ptr(m_ambientLightColor));
 		glUniform3fv(uLightColor, 1, glm::value_ptr(m_lightColor));
 
-		// bind out vertex array object
+		// bind vertex array object
 		// remember in the initialize function, we bound the VBO and IBO to the VAO
 		// so when we bind the VAO, openGL knows what vertices, indices and vertex attributes 
 		// to send to the shader
 		glBindVertexArray(ro->VAO);
 		glDrawElements(GL_TRIANGLES, mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
 	}
+
+	// reset back to the default active texture
+	glActiveTexture(GL_TEXTURE0);
 
 	// finished rendering meshes, disable shader
 	glUseProgram(0);
