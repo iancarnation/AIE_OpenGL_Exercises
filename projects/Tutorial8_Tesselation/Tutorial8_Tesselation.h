@@ -26,5 +26,10 @@ protected:
 
 	unsigned int m_vao, m_vbo, m_ibo;
 
-	unsigned int m_programID, m_vertShader, m_fragShader;
+	unsigned int m_programID, m_vertShader, m_fragShader,
+				 m_contShader, m_evalShader;
+
+	float m_displacementScale;
+
+	float m_tessLevelIn, m_tessLevelOut;
 };

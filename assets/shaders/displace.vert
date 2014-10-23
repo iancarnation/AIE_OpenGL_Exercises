@@ -11,6 +11,5 @@ uniform mat4 global;
 void main()
 {
 	TexCoord = texCoord;
-	gl_Position = projectionView * global * position;
-	//gl_Position = projectionView * position;
+	gl_Position = position;
 }
