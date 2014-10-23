@@ -157,7 +157,7 @@ void Tutorial8_Tesselation::onDraw()
 	glUseProgram(m_programID);
 
 	// fetch locations of the view and projection matrices and bind them
-	GLuint uProjectionView = glGetUniformLocation(m_programID, "projectionView");
+	GLuint uViewProjection = glGetUniformLocation(m_programID, "viewProjection");
 	GLuint uTextureMap = glGetUniformLocation(m_programID, "textureMap");
 	GLuint uGlobal = glGetUniformLocation(m_programID, "global");
 	GLuint uDisplacementMap = glGetUniformLocation(m_programID, "displacementMap");
@@ -176,8 +176,7 @@ void Tutorial8_Tesselation::onDraw()
 	glUniform1i(uDisplacementMap, 1);
 
 	// bind other uniforms
-	glUniformMatrix4fv(uProjectionView, 1, false, glm::value_ptr(m_projectionMatrix * viewMatrix));
-	glUniformMatrix4fv(uGlobal, 1, false, glm::value_ptr(m_global));
+	glUniformMatrix4fv(uViewProjection, 1, false, glm::value_ptr(m_projectionMatrix * viewMatrix));
 
 	glUniform1f(uDisplacementScale, m_displacementScale);
 	glUniform1f(uTessLevelIn, m_tessLevelIn);

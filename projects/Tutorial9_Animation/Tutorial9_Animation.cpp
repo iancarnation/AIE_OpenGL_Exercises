@@ -1,4 +1,4 @@
-#include "Tutorial2_FBX.h"
+#include "Tutorial9_Animation.h"
 #include "Gizmos.h"
 #include "Utilities.h"
 #include <GL/glew.h>
@@ -8,30 +8,26 @@
 #define DEFAULT_SCREENWIDTH 1280
 #define DEFAULT_SCREENHEIGHT 720
 
-Tutorial2_FBX::Tutorial2_FBX()
+Tutorial9_Animation::Tutorial9_Animation()
 {
 
 }
 
-Tutorial2_FBX::~Tutorial2_FBX()
+Tutorial9_Animation::~Tutorial9_Animation()
 {
 
 }
 
-bool Tutorial2_FBX::onCreate(int a_argc, char* a_argv[]) 
+bool Tutorial9_Animation::onCreate(int a_argc, char* a_argv[]) 
 {
 	// initialise the Gizmos helper class
 	Gizmos::create();
 
 	// create a world-space matrix for a camera
 	m_cameraMatrix = glm::inverse( glm::lookAt(glm::vec3(10,10,10),glm::vec3(0,0,0), glm::vec3(0,1,0)) );
-
-	// get window dimensions to calculate aspect ratio
-	int width = 0, height = 0;
-	glfwGetWindowSize(m_window, &width, &height);
-
+	
 	// create a perspective projection matrix with a 90 degree field-of-view and widescreen aspect ratio
-	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, width / (float)height, 0.1f, 1000.0f);
+	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, DEFAULT_SCREENWIDTH/(float)DEFAULT_SCREENHEIGHT, 0.1f, 1000.0f);
 
 	// set the clear colour and enable depth testing and backface culling
 	glClearColor(0.25f,0.25f,0.25f,1);
@@ -43,24 +39,24 @@ bool Tutorial2_FBX::onCreate(int a_argc, char* a_argv[])
 	const char* aszOutputs[] = { "outColor" };
 
 	// load shader internally calls glCreateShader...
-	GLuint vshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.vert", GL_VERTEX_SHADER);
-	GLuint fshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.frag", GL_FRAGMENT_SHADER);
+	m_vertShader = Utility::loadShader("../../assets/shaders/animation.vert", GL_VERTEX_SHADER);
+	m_fragShader= Utility::loadShader("../../assets/shaders/animation.frag", GL_FRAGMENT_SHADER);
 
-	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 3, aszInputs, 1, aszOutputs);
+	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, aszInputs, 1, aszOutputs);
 
 	// free our shader once we built our program
-	glDeleteShader(vshader);
-	glDeleteShader(fshader);
+	glDeleteShader(m_vertShader);
+	glDeleteShader(m_fragShader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/characters/Pyro/pyro.fbx", FBXFile::UNITS_METER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 
 	return true;
 }
 
-void Tutorial2_FBX::onUpdate(float a_deltaTime) 
+void Tutorial9_Animation::onUpdate(float a_deltaTime) 
 {
 	// update our camera matrix using the keyboard/mouse
 	Utility::freeMovement( m_cameraMatrix, a_deltaTime, 10 );
@@ -81,14 +77,14 @@ void Tutorial2_FBX::onUpdate(float a_deltaTime)
 						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
 	}
 
+	UpdateFBXSceneResource(m_fbx);
+
 	// quit our application when escape is pressed
 	if (glfwGetKey(m_window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		quit();
-
-	UpdateFBXSceneResource(m_fbx);
 }
 
-void Tutorial2_FBX::onDraw() 
+void Tutorial9_Animation::onDraw() 
 {
 	// clear the backbuffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -107,12 +103,12 @@ void Tutorial2_FBX::onDraw()
 	RenderFBXSceneResource(m_fbx, viewMatrix, m_projectionMatrix);
 }
 
-void Tutorial2_FBX::onDestroy()
+void Tutorial9_Animation::onDestroy()
 {
 	// clean up anything we created
 	Gizmos::destroy();
 
-	glDeleteShader(m_shader);
+	glDeleteShader(m_programID);
 
 	DestroyFBXSceneResource(m_fbx);
 	m_fbx->unload();
@@ -124,9 +120,9 @@ void Tutorial2_FBX::onDestroy()
 int main(int argc, char* argv[])
 {
 	// explicitly control the creation of our application
-	Application* app = new Tutorial2_FBX();
+	Application* app = new Tutorial9_Animation();
 	
-	if (app->create("AIE - Tutorial2_FBX",DEFAULT_SCREENWIDTH,DEFAULT_SCREENHEIGHT,argc,argv) == true)
+	if (app->create("AIE - Tutorial9_Animation",DEFAULT_SCREENWIDTH,DEFAULT_SCREENHEIGHT,argc,argv) == true)
 		app->run();
 		
 	// explicitly control the destruction of our application
@@ -135,7 +131,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void Tutorial2_FBX::InitFBXSceneResource(FBXFile *a_pScene)
+void Tutorial9_Animation::InitFBXSceneResource(FBXFile *a_pScene)
 {
 	// how many meshes and materials are stored within the fbx file
 	unsigned int meshCount = a_pScene->getMeshCount();
@@ -185,7 +181,7 @@ void Tutorial2_FBX::InitFBXSceneResource(FBXFile *a_pScene)
 		glBindVertexArray(0);
 	}
 }
-void Tutorial2_FBX::DestroyFBXSceneResource(FBXFile *a_pScene)
+void Tutorial9_Animation::DestroyFBXSceneResource(FBXFile *a_pScene)
 {
 	// how many meshes and materials are stored within the fbx file
 	unsigned int meshCount = a_pScene->getMeshCount();
@@ -223,23 +219,23 @@ void Tutorial2_FBX::DestroyFBXSceneResource(FBXFile *a_pScene)
 
 }
 
-void Tutorial2_FBX::UpdateFBXSceneResource(FBXFile *a_pScene)
+void Tutorial9_Animation::UpdateFBXSceneResource(FBXFile *a_pScene)
 {
 	a_pScene->getRoot()->updateGlobalTransform();
 }
 
-void Tutorial2_FBX::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, glm::mat4 a_projection)
+void Tutorial9_Animation::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, glm::mat4 a_projection)
 {
 	// activate a shader
-	glUseProgram(m_shader);
+	glUseProgram(m_programID);
 
 	// get the location of uniforms on the shader
-	GLint uDiffuseTexture = glGetUniformLocation(m_shader, "DiffuseTexture");
-	GLint uDiffuseColor = glGetUniformLocation(m_shader, "DiffuseColor");
+	GLint uDiffuseTexture = glGetUniformLocation(m_programID, "DiffuseTexture");
+	GLint uDiffuseColor = glGetUniformLocation(m_programID, "DiffuseColor");
 
-	GLint uModel = glGetUniformLocation(m_shader, "Model");
-	GLint uView = glGetUniformLocation(m_shader, "View");
-	GLint uProjection = glGetUniformLocation(m_shader, "Projection");
+	GLint uModel = glGetUniformLocation(m_programID, "Model");
+	GLint uView = glGetUniformLocation(m_programID, "View");
+	GLint uProjection = glGetUniformLocation(m_programID, "Projection");
 
 	// for each mesh in the model
 	for (int i = 0; i < a_pScene->getMeshCount(); ++i)

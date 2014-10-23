@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial7_MultipleTextures-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial8_Tesselation", "Tutorial8_Tesselation\Tutorial8_Tesselation.vcxproj", "{E1633FD4-D0E4-4C21-88AD-348F24FEB4BD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial9_Animation", "Tutorial9_Animation\Tutorial9_Animation.vcxproj", "{B7C9A419-B469-4A18-857E-BE53FCF25ED8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -75,6 +77,10 @@ Global
 		{E1633FD4-D0E4-4C21-88AD-348F24FEB4BD}.Debug|Win32.Build.0 = Debug|Win32
 		{E1633FD4-D0E4-4C21-88AD-348F24FEB4BD}.Release|Win32.ActiveCfg = Release|Win32
 		{E1633FD4-D0E4-4C21-88AD-348F24FEB4BD}.Release|Win32.Build.0 = Release|Win32
+		{B7C9A419-B469-4A18-857E-BE53FCF25ED8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B7C9A419-B469-4A18-857E-BE53FCF25ED8}.Debug|Win32.Build.0 = Debug|Win32
+		{B7C9A419-B469-4A18-857E-BE53FCF25ED8}.Release|Win32.ActiveCfg = Release|Win32
+		{B7C9A419-B469-4A18-857E-BE53FCF25ED8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

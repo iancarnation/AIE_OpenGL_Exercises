@@ -20,7 +20,6 @@ protected:
 
 	glm::mat4	m_cameraMatrix;
 	glm::mat4	m_projectionMatrix;
-	glm::mat4	m_global;
 
 	unsigned int m_texture, m_displacement;
 

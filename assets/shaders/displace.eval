@@ -6,7 +6,7 @@ in vec2 texCoord[];
 
 out vec2 TexCoord;
 
-uniform mat4 projectionView;
+uniform mat4 viewProjection;
 uniform sampler2D displacementMap;
 uniform float displacementScale;
 
@@ -33,5 +33,5 @@ void main()
 	position.y += offset;
 
 	// project to screen space
-	gl_Position = projectionView * vec4(position, 1);
+	gl_Position = viewProjection * vec4(position, 1);
 }
