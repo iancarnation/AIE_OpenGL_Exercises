@@ -21,6 +21,7 @@ protected:
 
 	glm::mat4	m_cameraMatrix;
 	glm::mat4	m_projectionMatrix;
+	glm::mat3 m_NormalMatrix;
 
 	FBXFile *m_fbx;
 
@@ -37,5 +38,12 @@ protected:
 	};
 
 	unsigned int m_programID, m_vertShader, m_fragShader;
+
+	glm::vec3 m_lightPosition;
+
+	glm::vec3 m_ambientLightColor;
+	glm::vec3 m_lightColor;
+
+	
 
 };

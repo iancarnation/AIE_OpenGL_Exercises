@@ -29,20 +29,25 @@ bool Tutorial9_Animation::onCreate(int a_argc, char* a_argv[])
 	// create a perspective projection matrix with a 90 degree field-of-view and widescreen aspect ratio
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, DEFAULT_SCREENWIDTH/(float)DEFAULT_SCREENHEIGHT, 0.1f, 1000.0f);
 
+	m_NormalMatrix = glm::mat3(0);
+
+	// set light position
+	m_lightPosition = glm::vec3(0, 1, 0);
+
+	// set light colors
+	m_ambientLightColor = glm::vec3(0.8, 0.1, 0.3);
+	m_lightColor = glm::vec3(1, 1, 1);
+
 	// set the clear colour and enable depth testing and backface culling
 	glClearColor(0.25f,0.25f,0.25f,1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// load the shader
-	const char* aszInputs[] = { "Position", "Color", "TexCoord1" };
-	const char* aszOutputs[] = { "outColor" };
-
 	// load shader internally calls glCreateShader...
 	m_vertShader = Utility::loadShader("../../assets/shaders/animation.vert", GL_VERTEX_SHADER);
 	m_fragShader= Utility::loadShader("../../assets/shaders/animation.frag", GL_FRAGMENT_SHADER);
 
-	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, aszInputs, 1, aszOutputs);
+	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader);
 
 	// free our shader once we built our program
 	glDeleteShader(m_vertShader);
@@ -77,7 +82,19 @@ void Tutorial9_Animation::onUpdate(float a_deltaTime)
 						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
 	}
 
+
+	// get skeleton and animation
+	FBXSkeleton* skeleton = m_fbx->getSkeletonByIndex(0);
+	FBXAnimation* animation = m_fbx->getAnimationByIndex(0);
+
+	// evaluate the animation to update bones
+	skeleton->evaluate(animation, Utility::getTotalTime());
+
 	UpdateFBXSceneResource(m_fbx);
+
+	// update light
+	m_lightPosition.z = sin(glfwGetTime()) * 2.5f;
+	m_lightPosition.x = cos(glfwGetTime()) * 2.5f;
 
 	// quit our application when escape is pressed
 	if (glfwGetKey(m_window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -166,17 +183,24 @@ void Tutorial9_Animation::InitFBXSceneResource(FBXFile *a_pScene)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, pMesh->m_indices.size() * sizeof(unsigned int), pMesh->m_indices.data(), GL_STATIC_DRAW);
 
 		// enable the attribute locations that will be used on our shaders
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(0); // position
+		glEnableVertexAttribArray(1); // texture coordinates
+		glEnableVertexAttribArray(2); // indices
+		glEnableVertexAttribArray(3); // blend weights
+		glEnableVertexAttribArray(4); // normal
+		glEnableVertexAttribArray(5); // tangent
+		glEnableVertexAttribArray(6); // binormal
 
 		// tell our shaders where the information within our buffers lie
 		// eg: attribute 0 is expected to be the vertices position. it should be 4 floats, representing xyzw
-		// eg: attribute 1 is expected to be the vertices color. it should be 4 floats, representing rgba
-		// eg: attribute 2 is expected to be the vertices texture coordinate. it should be 2 floats, representing U and V
+		// eg: attribute 1 is expected to be the vertices texture coordinate. it should be 2 floats, representing U and V
 		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::PositionOffset);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::ColourOffset);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TexCoord1Offset);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TexCoord1Offset);
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::IndicesOffset);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::WeightsOffset);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::NormalOffset);
+		glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TangentOffset);
+		glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::BiNormalOffset);
 
 		glBindVertexArray(0);
 	}
@@ -231,11 +255,22 @@ void Tutorial9_Animation::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_
 
 	// get the location of uniforms on the shader
 	GLint uDiffuseTexture = glGetUniformLocation(m_programID, "DiffuseTexture");
-	GLint uDiffuseColor = glGetUniformLocation(m_programID, "DiffuseColor");
+	GLint uNormalTexture = glGetUniformLocation(m_programID, "NormalTexture");
+	GLint uSpecularTexture = glGetUniformLocation(m_programID, "SpecularTexture");
 
 	GLint uModel = glGetUniformLocation(m_programID, "Model");
 	GLint uView = glGetUniformLocation(m_programID, "View");
 	GLint uProjection = glGetUniformLocation(m_programID, "Projection");
+	GLint uNormalMatrix = glGetUniformLocation(m_programID, "NormalMatrix");
+
+	GLint uBones = glGetUniformLocation(m_programID, "Bones");
+
+	GLint uLightPosition = glGetUniformLocation(m_programID, "LightPosition");
+	GLint uAmbientLightColor = glGetUniformLocation(m_programID, "AmbientLightColor");
+	GLint uLightColor = glGetUniformLocation(m_programID, "LightColor");
+
+	FBXSkeleton* skeleton = m_fbx->getSkeletonByIndex(0);
+	skeleton->updateBones();
 
 	// for each mesh in the model
 	for (int i = 0; i < a_pScene->getMeshCount(); ++i)
@@ -251,16 +286,36 @@ void Tutorial9_Animation::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
 
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::NormalTexture]->handle);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::SpecularTexture]->handle);
+
 		// reset back to the default active texture
 		glActiveTexture(GL_TEXTURE0);
 
 		// TELL THE SHADER WHICH TEXTURE TO USE
 		glUniform1i(uDiffuseTexture, 1);
+		glUniform1i(uNormalTexture, 2);
+		glUniform1i(uSpecularTexture, 3);
+
+		m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(a_view * (mesh->m_globalTransform))));
 
 		// send the Model, View and Projection Matrices to the shader
 		glUniformMatrix4fv(uModel, 1, false, glm::value_ptr(mesh->m_globalTransform));
 		glUniformMatrix4fv(uView, 1, false, glm::value_ptr(a_view));
 		glUniformMatrix4fv(uProjection, 1, false, glm::value_ptr(a_projection));
+		glUniformMatrix3fv(uNormalMatrix, 1, false, glm::value_ptr(m_NormalMatrix));
+
+		glUniformMatrix4fv(uBones, skeleton->m_boneCount, GL_FALSE, (float*)skeleton->m_bones);
+
+		// send light position to shader
+		glUniform3fv(uLightPosition, 1, glm::value_ptr(m_lightPosition));
+
+		// send light colors
+		glUniform3fv(uAmbientLightColor, 1, glm::value_ptr(m_ambientLightColor));
+		glUniform3fv(uLightColor, 1, glm::value_ptr(m_lightColor));
 
 		// bind out vertex array object
 		// remember in the initialize function, we bound the VBO and IBO to the VAO

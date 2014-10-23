@@ -225,9 +225,6 @@ void Tutorial7_MultipleTextures_NormalMap::InitFBXSceneResource(FBXFile *a_pScen
 		glEnableVertexAttribArray(4);
 
 		// tell our shaders where the information within our buffers lie
-		// eg: attribute 0 is expected to be the vertices position. it should be 4 floats, representing xyzw
-		// eg: attribute 1 is expected to be the vertices color. it should be 4 floats, representing rgba
-		// eg: attribute 4 is expected to be the vertices texture coordinate. it should be 2 floats, representing U and V
 		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::PositionOffset);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::NormalOffset);
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TangentOffset);
