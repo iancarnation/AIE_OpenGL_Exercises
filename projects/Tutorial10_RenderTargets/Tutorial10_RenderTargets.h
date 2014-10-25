@@ -5,12 +5,12 @@
 #include "FBXFile.h"
 
 // derived application class that wraps up all globals neatly
-class Tutorial2_FBX : public Application
+class Tutorial10_RenderTargets : public Application
 {
 public:
 
-	Tutorial2_FBX();
-	virtual ~Tutorial2_FBX();
+	Tutorial10_RenderTargets();
+	virtual ~Tutorial10_RenderTargets();
 
 protected:
 
@@ -22,8 +22,11 @@ protected:
 	glm::mat4	m_cameraMatrix;
 	glm::mat4	m_projectionMatrix;
 
-	unsigned int m_shader;
-	
+	GLuint m_FBO;
+	GLuint m_colorTex, m_depthTex;
+
+	GLuint m_programID, m_vertShader, m_fragShader;
+
 	FBXFile *m_fbx;
 
 	void InitFBXSceneResource(FBXFile *a_pScene);
@@ -37,4 +40,6 @@ protected:
 		unsigned int IBO;
 		unsigned int VAO;
 	};
+
+	unsigned int m_quadVBO, m_quadIBO, m_quadVAO;
 };
