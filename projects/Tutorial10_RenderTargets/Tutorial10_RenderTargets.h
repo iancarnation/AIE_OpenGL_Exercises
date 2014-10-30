@@ -22,10 +22,11 @@ protected:
 	glm::mat4	m_cameraMatrix;
 	glm::mat4	m_projectionMatrix;
 
-	GLuint m_FBO;
-	GLuint m_colorTex, m_depthTex;
+	unsigned int m_FBO;
+	unsigned int m_colorTex, m_depthTex;
 
-	GLuint m_programID, m_vertShader, m_fragShader;
+	unsigned int m_programID, m_vertShader, m_fragShader;
+	unsigned int m_quadProgramID;
 
 	FBXFile *m_fbx;
 
@@ -42,4 +43,14 @@ protected:
 	};
 
 	unsigned int m_quadVBO, m_quadIBO, m_quadVAO;
+
+
+	glm::mat4 m_MVP;
+	glm::mat4 m_MV;
+	glm::mat3 m_NormalMatrix;
+
+	glm::vec3 m_lightPosition;
+
+	glm::vec3 m_ambientLightColor;
+	glm::vec3 m_lightColor;
 };

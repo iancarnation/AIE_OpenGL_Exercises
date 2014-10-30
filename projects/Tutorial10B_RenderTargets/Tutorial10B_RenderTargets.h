@@ -5,12 +5,12 @@
 #include "FBXFile.h"
 
 // derived application class that wraps up all globals neatly
-class Tutorial7_MultipleTextures_NormalMap : public Application
+class Tutorial10B_RenderTargets : public Application
 {
 public:
 
-	Tutorial7_MultipleTextures_NormalMap();
-	virtual ~Tutorial7_MultipleTextures_NormalMap();
+	Tutorial10B_RenderTargets();
+	virtual ~Tutorial10B_RenderTargets();
 
 protected:
 

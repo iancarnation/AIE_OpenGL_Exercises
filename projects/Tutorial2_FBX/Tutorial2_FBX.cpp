@@ -53,7 +53,7 @@ bool Tutorial2_FBX::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(fshader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/stanford/Buddha.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 
@@ -252,9 +252,9 @@ void Tutorial2_FBX::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, 
 
 		// Bind the texture to one of the ActiveTextures
 		// if your shader supported multiple textures, you would bind each texture to a new Active Texture ID here
-		glActiveTexture(GL_TEXTURE1);
+		/*glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
-
+*/
 		// reset back to the default active texture
 		glActiveTexture(GL_TEXTURE0);
 

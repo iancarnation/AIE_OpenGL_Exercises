@@ -1,4 +1,4 @@
-#include "Tutorial10_RenderTargets.h"
+#include "Tutorial10B_RenderTargets.h"
 #include "Gizmos.h"
 #include "Utilities.h"
 #include <GL/glew.h>
@@ -13,26 +13,26 @@ using std::cos;
 #define DEFAULT_SCREENWIDTH 1280
 #define DEFAULT_SCREENHEIGHT 720
 
-Tutorial10_RenderTargets::Tutorial10_RenderTargets()
+Tutorial10B_RenderTargets::Tutorial10B_RenderTargets()
 {
 
 }
 
-Tutorial10_RenderTargets::~Tutorial10_RenderTargets()
+Tutorial10B_RenderTargets::~Tutorial10B_RenderTargets()
 {
 
 }
 
-bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[]) 
+bool Tutorial10B_RenderTargets::onCreate(int a_argc, char* a_argv[])
 {
 	// initialise the Gizmos helper class
 	Gizmos::create();
 
 	// create a world-space matrix for a camera
-	m_cameraMatrix = glm::inverse( glm::lookAt(glm::vec3(10,10,10),glm::vec3(0,0,0), glm::vec3(0,1,0)) );
-	
+	m_cameraMatrix = glm::inverse(glm::lookAt(glm::vec3(10, 10, 10), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)));
+
 	// create a perspective projection matrix with a 90 degree field-of-view and widescreen aspect ratio
-	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, DEFAULT_SCREENWIDTH/(float)DEFAULT_SCREENHEIGHT, 0.1f, 1000.0f);
+	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, DEFAULT_SCREENWIDTH / (float)DEFAULT_SCREENHEIGHT, 0.1f, 1000.0f);
 
 	// set uniform matrices to 0
 	m_MVP = glm::mat4(0);
@@ -47,54 +47,40 @@ bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[])
 	m_lightColor = glm::vec3(1, 1, 1);
 
 	// set the clear colour and enable depth testing and backface culling
-	glClearColor(0.25f,0.25f,0.25f,1);
+	glClearColor(0.25f, 0.25f, 0.25f, 1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// ---------- TEXTURES & FRAMEBUFFER --------------------------------------
+	//// texture --------------------------
 
-	//// create a color texture to be attached to the framebuffer ---
-	//glGenTextures(1, &m_colorTex);
-	//// bind the texture for editing
-	//glBindTexture(GL_TEXTURE_2D, m_colorTex);
-	//// create the texture
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+	//m_decayValue = 0;
 
-	//// set the filtering if we intend to sample within a shader
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//// load image data
+	//int width = 0;
+	//int height = 0;
+	//int format = 0;
+	//unsigned char* pixelData = stbi_load("../../assets/textures/decay.png",
+	//	&width, &height, &format, 4);
+
+	//printf("Width: %i Height: %i Format: %i\n", width, height, format);
+
+	//// create OpenGL texture handle
+	//glGenTextures(1, &m_decayTexture);
+	//glBindTexture(GL_TEXTURE_2D, m_decayTexture);
+
+	//// set pixel data for texture
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+
+	//// set filtering
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	//// create depth texture ----
-	//glGenTextures(1, &m_depthTex);
-	//glBindTexture(GL_TEXTURE_2D, m_depthTex);
-	//// note the use of 'DEPTH_COMPONENT' arguments
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	//// clear bound texture state so we don't accidentally change it
+	//glBindTexture(GL_TEXTURE_2D, 0);
 
-	//// create framebuffer object ----
-	//glGenFramebuffers(1, &m_FBO);
-	//// bind the framebuffer for editing
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
+	//delete[] pixelData;
 
-	//// attach color ----
-	//// attach color texture to the 0th color attachment of the framebuffer
-	//glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_colorTex, 0);
-	//// attach depth texture
-	//glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthTex, 0);
-
-	//// tell the framebuffer which color attachments we will be drawing to and how many
-	//GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	//glDrawBuffers(1, drawBuffers);
-
-	//// if status is not 'complete', there has been an error
-	//GLenum status = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-	//if (status != GL_FRAMEBUFFER_COMPLETE)
-	//	printf("Framebuffer Error!! Nyaahhgg!!\n");
-
-	//// when framebuffer unbound, future render calls are sent to back buffer
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	// -------------------------------------------------------------
-
-	// ----- SHADERS ------------------------------------------------
+	//// -----------------------------------
 
 	// load the shader
 	const char* aszInputs[] = { "Position", "Normal", "Tangent", "BiNormal", "TexCoord1" };
@@ -104,57 +90,39 @@ bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[])
 	GLuint vshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.vert", GL_VERTEX_SHADER);
 	GLuint fshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.frag", GL_FRAGMENT_SHADER);
 
-	m_programID = Utility::createProgram(vshader, 0, 0, 0, fshader, 5, aszInputs, 1, aszOutputs);
+	m_shader = Utility::createProgram(vshader, 0, 0, 0, fshader, 5, aszInputs, 1, aszOutputs);
 
 	// free our shader once we built our program
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
-	//// load shader internally calls glCreateShader...
-	//m_vertShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
-	//m_fragShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
-
-	//const char* inputs[] = { "position", "colour", "textureCoordinate" };
-	//m_quadProgramID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, inputs);
-
-	//// free our shader once we built our program
-	//glDeleteShader(m_vertShader);
-	//glDeleteShader(m_fragShader);
-	// -------------------------------------------------------------
-
-	// ----- FBX ---------------------------------------------------
-
 	m_fbx = new FBXFile();
 	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
-	// -------------------------------------------------------------
-
-	// create a simple plane to render
-	Utility::build3DPlane(10, m_quadVAO, m_quadVAO, m_quadIBO);
 
 	return true;
 }
 
-void Tutorial10_RenderTargets::onUpdate(float a_deltaTime) 
+void Tutorial10B_RenderTargets::onUpdate(float a_deltaTime)
 {
 	// update our camera matrix using the keyboard/mouse
-	Utility::freeMovement( m_cameraMatrix, a_deltaTime, 10 );
+	Utility::freeMovement(m_cameraMatrix, a_deltaTime, 10);
 
 	// clear all gizmos from last frame
 	Gizmos::clear();
-	
+
 	// add an identity matrix gizmo
-	Gizmos::addTransform( glm::mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) );
+	Gizmos::addTransform(glm::mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
 
 	// add a 20x20 grid on the XZ-plane
-	for ( int i = 0 ; i < 21 ; ++i )
+	for (int i = 0; i < 21; ++i)
 	{
-		Gizmos::addLine( glm::vec3(-10 + i, 0, 10), glm::vec3(-10 + i, 0, -10), 
-						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
-		
-		Gizmos::addLine( glm::vec3(10, 0, -10 + i), glm::vec3(-10, 0, -10 + i), 
-						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
+		Gizmos::addLine(glm::vec3(-10 + i, 0, 10), glm::vec3(-10 + i, 0, -10),
+			i == 10 ? glm::vec4(1, 1, 1, 1) : glm::vec4(0, 0, 0, 1));
+
+		Gizmos::addLine(glm::vec3(10, 0, -10 + i), glm::vec3(-10, 0, -10 + i),
+			i == 10 ? glm::vec4(1, 1, 1, 1) : glm::vec4(0, 0, 0, 1));
 	}
 
 	UpdateFBXSceneResource(m_fbx);
@@ -163,90 +131,59 @@ void Tutorial10_RenderTargets::onUpdate(float a_deltaTime)
 	m_lightPosition.x = cos(glfwGetTime()) * 2.5f;
 
 	// quit our application when escape is pressed
-	if (glfwGetKey(m_window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		quit();
 }
 
-void Tutorial10_RenderTargets::onDraw() 
+void Tutorial10B_RenderTargets::onDraw()
 {
 	// clear the backbuffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	// get the view matrix from the world-space camera matrix
-	glm::mat4 viewMatrix = glm::inverse( m_cameraMatrix );
-	
+	glm::mat4 viewMatrix = glm::inverse(m_cameraMatrix);
+
 	// draw the gizmos from this frame
 	Gizmos::draw(m_projectionMatrix, viewMatrix);
 
-	// get window dimensions for 2D orthographic projection ** ?? **
+	// get window dimensions for 2D orthographic projection
 	int width = 0, height = 0;
 	glfwGetWindowSize(m_window, &width, &height);
 	Gizmos::draw2D(glm::ortho<float>(0, width, 0, height, -1.0f, 1.0f));
 
-	// draw to framebuffer -----------
-
-	//// bind the framebuffer for rendering
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	RenderFBXSceneResource(m_fbx, viewMatrix, m_projectionMatrix);
-
-	//// switch back to back buffer ---
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	//// draw quad ------------------
-	//// bind shader to the GPU
-	//glUseProgram(m_quadProgramID);
-
-	//// fetch locations of the view and projection matrices and bind them
-	//unsigned int location = glGetUniformLocation(m_quadProgramID, "view");
-	//glUniformMatrix4fv(location, 1, false, glm::value_ptr(viewMatrix));
-
-	//location = glGetUniformLocation(m_quadProgramID, "projection");
-	//glUniformMatrix4fv(location, 1, false, glm::value_ptr(m_projectionMatrix));
-
-	//// activate texture slot 0 and bind our texture to it
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, m_colorTex);
-
-	//// fetch the location of the texture sampler and bind it to 0
-	//location = glGetUniformLocation(m_quadProgramID, "textureMap");
-	//glUniform1i(location, 0);
-
-	//// bind out 3D plane and draw it
-	//glBindVertexArray(m_quadVAO);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-
-
 }
 
-void Tutorial10_RenderTargets::onDestroy()
+void Tutorial10B_RenderTargets::onDestroy()
 {
 	// clean up anything we created
 	Gizmos::destroy();
 
-	glDeleteShader(m_programID);
+	glDeleteShader(m_shader);
 
 	DestroyFBXSceneResource(m_fbx);
 	m_fbx->unload();
 	delete m_fbx;
 	m_fbx = NULL;
+
 }
 
 // main that controls the creation/destruction of an application
 int main(int argc, char* argv[])
 {
 	// explicitly control the creation of our application
-	Application* app = new Tutorial10_RenderTargets();
-	
-	if (app->create("AIE - Tutorial10_RenderTargets",DEFAULT_SCREENWIDTH,DEFAULT_SCREENHEIGHT,argc,argv) == true)
+	Application* app = new Tutorial10B_RenderTargets();
+
+	if (app->create("AIE - Tutorial10B_RenderTargets", DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, argc, argv) == true)
 		app->run();
-		
+
 	// explicitly control the destruction of our application
 	delete app;
 
 	return 0;
 }
-void Tutorial10_RenderTargets::InitFBXSceneResource(FBXFile *a_pScene)
+
+void Tutorial10B_RenderTargets::InitFBXSceneResource(FBXFile *a_pScene)
 {
 	// how many meshes and materials are stored within the fbx file
 	unsigned int meshCount = a_pScene->getMeshCount();
@@ -297,7 +234,8 @@ void Tutorial10_RenderTargets::InitFBXSceneResource(FBXFile *a_pScene)
 		glBindVertexArray(0);
 	}
 }
-void Tutorial10_RenderTargets::DestroyFBXSceneResource(FBXFile *a_pScene)
+
+void Tutorial10B_RenderTargets::DestroyFBXSceneResource(FBXFile *a_pScene)
 {
 	// how many meshes and materials are stored within the fbx file
 	unsigned int meshCount = a_pScene->getMeshCount();
@@ -335,35 +273,37 @@ void Tutorial10_RenderTargets::DestroyFBXSceneResource(FBXFile *a_pScene)
 
 }
 
-void Tutorial10_RenderTargets::UpdateFBXSceneResource(FBXFile *a_pScene)
+void Tutorial10B_RenderTargets::UpdateFBXSceneResource(FBXFile *a_pScene)
 {
 	a_pScene->getRoot()->updateGlobalTransform();
 }
 
-void Tutorial10_RenderTargets::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, glm::mat4 a_projection)
+void Tutorial10B_RenderTargets::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, glm::mat4 a_projection)
 {
 	// enable transparent blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// activate a shader
-	glUseProgram(m_programID);
+	glUseProgram(m_shader);
 
 	// get the location of uniforms on the shader
 	// vert ---
-	GLint uMVP = glGetUniformLocation(m_programID, "MVP");
-	GLint uMV = glGetUniformLocation(m_programID, "MV");
-	GLint uNormalMatrix = glGetUniformLocation(m_programID, "NormalMatrix");
+	GLint uMVP = glGetUniformLocation(m_shader, "MVP");
+	GLint uMV = glGetUniformLocation(m_shader, "MV");
+	GLint uNormalMatrix = glGetUniformLocation(m_shader, "NormalMatrix");
 
-	GLint uLightPosition = glGetUniformLocation(m_programID, "LightPosition");
+	GLint uLightPosition = glGetUniformLocation(m_shader, "LightPosition");
 
 	// frag ---
-	GLint uDiffuseTexture = glGetUniformLocation(m_programID, "DiffuseTexture");
-	GLint uNormalTexture = glGetUniformLocation(m_programID, "NormalTexture");
-	GLint uSpecularTexture = glGetUniformLocation(m_programID, "SpecularTexture");
+	GLint uDiffuseTexture = glGetUniformLocation(m_shader, "DiffuseTexture");
+	GLint uNormalTexture = glGetUniformLocation(m_shader, "NormalTexture");
+	GLint uSpecularTexture = glGetUniformLocation(m_shader, "SpecularTexture");
 
-	GLint uAmbientLightColor = glGetUniformLocation(m_programID, "AmbientLightColor");
-	GLint uLightColor = glGetUniformLocation(m_programID, "LightColor");
+	GLint uAmbientLightColor = glGetUniformLocation(m_shader, "AmbientLightColor");
+	GLint uLightColor = glGetUniformLocation(m_shader, "LightColor");
+
+	//GLint uToggle = glGetUniformLocation(m_shader, "toggle");
 
 	// for each mesh in the model
 	for (int i = 0; i < a_pScene->getMeshCount(); ++i)
