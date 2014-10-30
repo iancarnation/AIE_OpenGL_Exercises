@@ -53,45 +53,45 @@ bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[])
 
 	// ---------- TEXTURES & FRAMEBUFFER --------------------------------------
 
-	//// create a color texture to be attached to the framebuffer ---
-	//glGenTextures(1, &m_colorTex);
-	//// bind the texture for editing
-	//glBindTexture(GL_TEXTURE_2D, m_colorTex);
-	//// create the texture
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+	// create a color texture to be attached to the framebuffer ---
+	glGenTextures(1, &m_colorTex);
+	// bind the texture for editing
+	glBindTexture(GL_TEXTURE_2D, m_colorTex);
+	// create the texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
 
-	//// set the filtering if we intend to sample within a shader
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// set the filtering if we intend to sample within a shader
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	//// create depth texture ----
-	//glGenTextures(1, &m_depthTex);
-	//glBindTexture(GL_TEXTURE_2D, m_depthTex);
-	//// note the use of 'DEPTH_COMPONENT' arguments
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	// create depth texture ----
+	glGenTextures(1, &m_depthTex);
+	glBindTexture(GL_TEXTURE_2D, m_depthTex);
+	// note the use of 'DEPTH_COMPONENT' arguments
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-	//// create framebuffer object ----
-	//glGenFramebuffers(1, &m_FBO);
-	//// bind the framebuffer for editing
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
+	// create framebuffer object ----
+	glGenFramebuffers(1, &m_FBO);
+	// bind the framebuffer for editing
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
 
-	//// attach color ----
-	//// attach color texture to the 0th color attachment of the framebuffer
-	//glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_colorTex, 0);
-	//// attach depth texture
-	//glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthTex, 0);
+	// attach color ----
+	// attach color texture to the 0th color attachment of the framebuffer
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_colorTex, 0);
+	// attach depth texture
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthTex, 0);
 
-	//// tell the framebuffer which color attachments we will be drawing to and how many
-	//GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	//glDrawBuffers(1, drawBuffers);
+	// tell the framebuffer which color attachments we will be drawing to and how many
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);
 
-	//// if status is not 'complete', there has been an error
-	//GLenum status = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-	//if (status != GL_FRAMEBUFFER_COMPLETE)
-	//	printf("Framebuffer Error!! Nyaahhgg!!\n");
+	// if status is not 'complete', there has been an error
+	GLenum status = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		printf("Framebuffer Error!! Nyaahhgg!!\n");
 
-	//// when framebuffer unbound, future render calls are sent to back buffer
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	// when framebuffer unbound, future render calls are sent to back buffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	// -------------------------------------------------------------
 
 	// ----- SHADERS ------------------------------------------------
@@ -110,16 +110,16 @@ bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
-	//// load shader internally calls glCreateShader...
-	//m_vertShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
-	//m_fragShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
+	// load shader internally calls glCreateShader...
+	m_vertShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
 
-	//const char* inputs[] = { "position", "colour", "textureCoordinate" };
-	//m_quadProgramID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, inputs);
+	const char* inputs[] = { "position", "colour", "textureCoordinate" };
+	m_quadProgramID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, inputs);
 
-	//// free our shader once we built our program
-	//glDeleteShader(m_vertShader);
-	//glDeleteShader(m_fragShader);
+	// free our shader once we built our program
+	glDeleteShader(m_vertShader);
+	glDeleteShader(m_fragShader);
 	// -------------------------------------------------------------
 
 	// ----- FBX ---------------------------------------------------
@@ -131,7 +131,7 @@ bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[])
 	// -------------------------------------------------------------
 
 	// create a simple plane to render
-	Utility::build3DPlane(10, m_quadVAO, m_quadVAO, m_quadIBO);
+	Utility::build3DPlane(10, m_quadVAO, m_quadVBO, m_quadIBO);
 
 	return true;
 }
@@ -186,35 +186,35 @@ void Tutorial10_RenderTargets::onDraw()
 	// draw to framebuffer -----------
 
 	//// bind the framebuffer for rendering
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	RenderFBXSceneResource(m_fbx, viewMatrix, m_projectionMatrix);
 
 	//// switch back to back buffer ---
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	//// draw quad ------------------
-	//// bind shader to the GPU
-	//glUseProgram(m_quadProgramID);
+	// bind shader to the GPU
+	glUseProgram(m_quadProgramID);
 
-	//// fetch locations of the view and projection matrices and bind them
-	//unsigned int location = glGetUniformLocation(m_quadProgramID, "view");
-	//glUniformMatrix4fv(location, 1, false, glm::value_ptr(viewMatrix));
+	// fetch locations of the view and projection matrices and bind them
+	unsigned int location = glGetUniformLocation(m_quadProgramID, "view");
+	glUniformMatrix4fv(location, 1, false, glm::value_ptr(viewMatrix));
 
-	//location = glGetUniformLocation(m_quadProgramID, "projection");
-	//glUniformMatrix4fv(location, 1, false, glm::value_ptr(m_projectionMatrix));
+	location = glGetUniformLocation(m_quadProgramID, "projection");
+	glUniformMatrix4fv(location, 1, false, glm::value_ptr(m_projectionMatrix));
 
-	//// activate texture slot 0 and bind our texture to it
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, m_colorTex);
+	// activate texture slot 0 and bind our texture to it
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_colorTex);
 
-	//// fetch the location of the texture sampler and bind it to 0
-	//location = glGetUniformLocation(m_quadProgramID, "textureMap");
-	//glUniform1i(location, 0);
+	// fetch the location of the texture sampler and bind it to 0
+	location = glGetUniformLocation(m_quadProgramID, "textureMap");
+	glUniform1i(location, 0);
 
-	//// bind out 3D plane and draw it
-	//glBindVertexArray(m_quadVAO);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	// bind out 3D plane and draw it
+	glBindVertexArray(m_quadVAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 
 }
