@@ -42,12 +42,19 @@ protected:
 		unsigned int VAO;
 	};
 
-	unsigned int m_quadVBO, m_quadIBO, m_quadVAO;
+	void InitQuad(int a_size);
+	void DrawQuad(glm::mat4 a_viewMatrix, glm::mat4 a_projectionMatrix);
+	void SetQuadNormal(int a_size);
 
+	unsigned int m_quadVBO, m_quadIBO, m_quadVAO;
+	glm::vec3 m_quadNormal;
 
 	glm::mat4 m_MVP;
 	glm::mat4 m_MV;
 	glm::mat3 m_NormalMatrix;
+
+	glm::mat4 m_ReflectionMatrix;
+	glm::mat4 m_World;
 
 	glm::vec3 m_lightPosition;
 

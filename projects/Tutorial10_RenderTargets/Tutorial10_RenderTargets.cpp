@@ -101,37 +101,26 @@ bool Tutorial10_RenderTargets::onCreate(int a_argc, char* a_argv[])
 	const char* aszOutputs[] = { "outColor" };
 
 	// load shader internally calls glCreateShader...
-	GLuint vshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.vert", GL_VERTEX_SHADER);
-	GLuint fshader = Utility::loadShader("../../assets/shaders/MultipleTextures_NormalMap.frag", GL_FRAGMENT_SHADER);
+	GLuint vshader = Utility::loadShader("../../assets/shaders/Tutorial10_RenderTargets.vert", GL_VERTEX_SHADER);
+	GLuint fshader = Utility::loadShader("../../assets/shaders/Tutorial10_RenderTargets.frag", GL_FRAGMENT_SHADER);
 
 	m_programID = Utility::createProgram(vshader, 0, 0, 0, fshader, 5, aszInputs, 1, aszOutputs);
 
 	// free our shader once we built our program
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
-
-	// load shader internally calls glCreateShader...
-	m_vertShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
-	m_fragShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
-
-	const char* inputs[] = { "position", "colour", "textureCoordinate" };
-	m_quadProgramID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, inputs);
-
-	// free our shader once we built our program
-	glDeleteShader(m_vertShader);
-	glDeleteShader(m_fragShader);
 	// -------------------------------------------------------------
 
 	// ----- FBX ---------------------------------------------------
-
 	m_fbx = new FBXFile();
 	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 	// -------------------------------------------------------------
 
-	// create a simple plane to render
-	Utility::build3DPlane(10, m_quadVAO, m_quadVBO, m_quadIBO);
+	InitQuad(10);
+
+	m_ReflectionMatrix = glm::reflect3D(m_ReflectionMatrix, m_quadNormal);
 
 	return true;
 }
@@ -193,29 +182,7 @@ void Tutorial10_RenderTargets::onDraw()
 	//// switch back to back buffer ---
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	//// draw quad ------------------
-	// bind shader to the GPU
-	glUseProgram(m_quadProgramID);
-
-	// fetch locations of the view and projection matrices and bind them
-	unsigned int location = glGetUniformLocation(m_quadProgramID, "view");
-	glUniformMatrix4fv(location, 1, false, glm::value_ptr(viewMatrix));
-
-	location = glGetUniformLocation(m_quadProgramID, "projection");
-	glUniformMatrix4fv(location, 1, false, glm::value_ptr(m_projectionMatrix));
-
-	// activate texture slot 0 and bind our texture to it
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_colorTex);
-
-	// fetch the location of the texture sampler and bind it to 0
-	location = glGetUniformLocation(m_quadProgramID, "textureMap");
-	glUniform1i(location, 0);
-
-	// bind out 3D plane and draw it
-	glBindVertexArray(m_quadVAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-
+	//DrawQuad();
 
 }
 
@@ -355,6 +322,8 @@ void Tutorial10_RenderTargets::RenderFBXSceneResource(FBXFile *a_pScene, glm::ma
 	GLint uMV = glGetUniformLocation(m_programID, "MV");
 	GLint uNormalMatrix = glGetUniformLocation(m_programID, "NormalMatrix");
 
+	GLint uWorld = glGetUniformLocation(m_programID, "World");
+
 	GLint uLightPosition = glGetUniformLocation(m_programID, "LightPosition");
 
 	// frag ---
@@ -379,11 +348,15 @@ void Tutorial10_RenderTargets::RenderFBXSceneResource(FBXFile *a_pScene, glm::ma
 		m_MV = a_view * (mesh->m_globalTransform);
 		m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_MV)));
 
+		glm::mat4 newWorldMatrix = m_ReflectionMatrix * m_World;
+
 		// send matrices to shader
 		glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(m_MVP));
 		glUniformMatrix4fv(uMV, 1, false, glm::value_ptr(m_MV));
 
 		glUniformMatrix3fv(uNormalMatrix, 1, false, glm::value_ptr(m_NormalMatrix));
+
+		glUniformMatrix4fv(uWorld, 1, GL_FALSE, (float*)&newWorldMatrix);
 
 		// send light position to shader
 		glUniform3fv(uLightPosition, 1, glm::value_ptr(m_lightPosition));
@@ -421,4 +394,75 @@ void Tutorial10_RenderTargets::RenderFBXSceneResource(FBXFile *a_pScene, glm::ma
 
 	// finished rendering meshes, disable shader
 	glUseProgram(0);
+}
+
+void Tutorial10_RenderTargets::InitQuad(int a_size)
+{
+	// create a simple plane to render
+	Utility::build3DPlane(a_size, m_quadVAO, m_quadVBO, m_quadIBO);
+	SetQuadNormal(a_size);
+
+	// load shader internally calls glCreateShader...
+	m_vertShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.vert", GL_VERTEX_SHADER);
+	m_fragShader = Utility::loadShader("../../assets/shaders/Tutorial3_Texture.frag", GL_FRAGMENT_SHADER);
+
+	const char* inputs[] = { "position", "colour", "textureCoordinate" };
+	m_quadProgramID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader, 3, inputs);
+
+	// free our shader once we built our program
+	glDeleteShader(m_vertShader);
+	glDeleteShader(m_fragShader);
+}
+
+void Tutorial10_RenderTargets::DrawQuad(glm::mat4 a_viewMatrix, glm::mat4 a_projectionMatrix)
+{
+	// bind shader to the GPU
+	glUseProgram(m_quadProgramID);
+
+	// fetch locations of the view and projection matrices and bind them
+	unsigned int location = glGetUniformLocation(m_quadProgramID, "view");
+	glUniformMatrix4fv(location, 1, false, glm::value_ptr(a_viewMatrix));
+
+	location = glGetUniformLocation(m_quadProgramID, "projection");
+	glUniformMatrix4fv(location, 1, false, glm::value_ptr(a_projectionMatrix));
+
+	// activate texture slot 0 and bind our texture to it
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_colorTex);
+
+	// fetch the location of the texture sampler and bind it to 0
+	location = glGetUniformLocation(m_quadProgramID, "textureMap");
+	glUniform1i(location, 0);
+
+	// bind out 3D plane and draw it
+	glBindVertexArray(m_quadVAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+}
+
+// sets value to represent normal of reflection plane. **Hardcoding right now..maybe do transform feedback later for dyamism?**
+void Tutorial10_RenderTargets::SetQuadNormal(int a_size)
+{
+	float halfSize = a_size * 0.5f;
+
+	// set vertex values
+	glm::vec3 v0(-halfSize, 0, -halfSize);
+	glm::vec3 v1(halfSize, 0, -halfSize);
+	glm::vec3 v2(halfSize, 0, halfSize);
+	glm::vec3 v3(-halfSize, 0, halfSize);
+
+	/* v2        v3
+	   +---------+
+	   |         |
+	   |         |
+	   +---------+
+	   v0        v1	*/
+
+	// calculate vectors along the two edges that v0 is on
+	glm::vec3 edge0(glm::normalize(v1 - v0));
+	glm::vec3 edge1(glm::normalize(v2 - v0));
+
+	// normal at v0 is cross product of the edge vectors
+	m_quadNormal = glm::cross(edge0, edge1);
+
 }
