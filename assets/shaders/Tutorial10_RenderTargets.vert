@@ -14,6 +14,8 @@ uniform mat4 MVP;
 uniform mat4 MV;
 uniform mat3 NormalMatrix;
 
+uniform mat4 World;
+
 uniform vec3 LightPosition;
 
 void main()
@@ -45,5 +47,5 @@ void main()
 	vTexCoord1 = TexCoord1;
 
 	// finally set the position over the vertex
-	gl_Position = MVP * Position;
+	gl_Position = MVP * World * Position;
 }
