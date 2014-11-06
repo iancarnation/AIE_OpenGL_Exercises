@@ -97,7 +97,7 @@ bool Tutorial7_MultipleTextures_NormalMap::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(fshader);
 
 	m_fbx = new FBXFile();
-	m_fbx->load("../../assets/models/ruinedtank/tank.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 	InitFBXSceneResource(m_fbx);
 

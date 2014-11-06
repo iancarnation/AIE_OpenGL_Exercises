@@ -1,0 +1,25 @@
+// #version 330
+
+// layout(location = 0) in vec4 Position;
+// layout(location = 1) in vec2 TexCoord;
+
+// out vec2 UV;
+
+// void main()
+// {
+// 	UV = TexCoord;
+// 	gl_Position = Position;
+// }
+
+#version 150
+
+in vec4 Position;
+in vec2 TexCoord;
+
+out vec2 UV;
+
+void main()
+{
+	UV = TexCoord;
+	gl_Position = Position;
+}

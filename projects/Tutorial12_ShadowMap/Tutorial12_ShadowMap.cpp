@@ -26,13 +26,40 @@ bool Tutorial12_ShadowMap::onCreate(int a_argc, char* a_argv[])
 	// create a world-space matrix for a camera
 	m_cameraMatrix = glm::inverse( glm::lookAt(glm::vec3(10,10,10),glm::vec3(0,0,0), glm::vec3(0,1,0)) );
 	
+	// get window dimensions to calculate aspect ratio
+	int width = 0, height = 0;
+	glfwGetWindowSize(m_window, &width, &height);
+
 	// create a perspective projection matrix with a 90 degree field-of-view and widescreen aspect ratio
-	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, DEFAULT_SCREENWIDTH/(float)DEFAULT_SCREENHEIGHT, 0.1f, 1000.0f);
+	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, width/(float)height, 0.1f, 1000.0f);
 
 	// set the clear colour and enable depth testing and backface culling
 	glClearColor(0.25f,0.25f,0.25f,1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+
+	// shadow map shader ------------------------------------------------------
+	m_shadowVert = Utility::loadShader("../../assets/shaders/Tutorial12_ShadowRender.vert", GL_VERTEX_SHADER);
+	m_shadowFrag = Utility::loadShader("../../assets/shaders/Tutorial12_ShadowRender.frag", GL_FRAGMENT_SHADER);
+	
+	const char* inputs[] = { "Position" };
+	
+	m_shadowProgram = Utility::createProgram(m_shadowVert, 0, 0, 0, m_shadowFrag, 1, inputs);
+
+	glDeleteShader(m_shadowVert);
+	glDeleteShader(m_shadowFrag);
+
+	// debug display shader ---------------------------------------------------
+	m_quadVert = Utility::loadShader("../../assets/shaders/Tutorial12_DebugQuad.vert", GL_VERTEX_SHADER);
+	m_quadVert = Utility::loadShader("../../assets/shaders/Tutorial12_DebugQuad.frag", GL_FRAGMENT_SHADER);
+	
+	const char* quadInputs[] = { "Position", "TexCoord" };
+	const char* quadOutputs[] = { "FragColor" };
+
+	m_quadProgram = Utility::createProgram(m_quadVert, 0, 0, 0, m_quadFrag, 2, quadInputs, 1, quadOutputs);
+
+	glDeleteShader(m_quadVert);
+	glDeleteShader(m_quadFrag);
 
 	// scene shader -----------------------------------------------------------
 	const char* aszInputs[] = { "Position", "Color", "TexCoord1" };
@@ -48,11 +75,18 @@ bool Tutorial12_ShadowMap::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
+	createShadowBuffer();
+
 	// load FBX ----------------------------------------------------------------
 	m_fbx = new FBXFile();
-	m_fbx->load("../../assets/models/stanford/Buddha.fbx", FBXFile::UNITS_CENTIMETER);
+	//m_fbx->load("../../assets/models/ruinedtank/tank.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/sphere.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
+
 	InitFBXSceneResource(m_fbx);
+
+	// make debug display quad
+	InitQuad();
 
 	return true;
 }
@@ -66,7 +100,7 @@ void Tutorial12_ShadowMap::onUpdate(float a_deltaTime)
 	Gizmos::clear();
 	
 	// add an identity matrix gizmo
-	Gizmos::addTransform( glm::mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) );
+	//Gizmos::addTransform( glm::mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) );
 
 	// add a 20x20 grid on the XZ-plane
 	for ( int i = 0 ; i < 21 ; ++i )
@@ -87,16 +121,15 @@ void Tutorial12_ShadowMap::onUpdate(float a_deltaTime)
 
 void Tutorial12_ShadowMap::onDraw() 
 {
-	// set to render to the back-buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// get the view matrix from the world-space camera matrix
 	glm::mat4 viewMatrix = glm::inverse( m_cameraMatrix );
 
-	//// draw the gizmos from this frame
-	//Gizmos::draw(m_projectionMatrix, viewMatrix);
+	// get window dimensions for 2D orthographic projection ** ? ? **
+	int width = 0, height = 0;
+	glfwGetWindowSize(m_window, &width, &height);
+	Gizmos::draw2D(glm::ortho<float>(0, width, 0, height, -1.0f, 1.0f));
 
 	RenderFBXSceneResource(m_fbx, viewMatrix, m_projectionMatrix);
 }
@@ -166,7 +199,7 @@ void Tutorial12_ShadowMap::createShadowBuffer()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Tutorial12_ShadowMap::setupLightAndShadowMatrix(float count)
+void Tutorial12_ShadowMap::setupLightAndShadowMatrix()
 {
 	// setup light direction and shadow matrix
 	glm::vec3 lightPosition = glm::vec3(1.0f, 1.0f, 0);
@@ -214,15 +247,14 @@ void Tutorial12_ShadowMap::InitFBXSceneResource(FBXFile *a_pScene)
 		// enable the attribute locations that will be used on our shaders
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
+		//glEnableVertexAttribArray(2);
 
 		// tell our shaders where the information within our buffers lie
 		// eg: attribute 0 is expected to be the vertices position. it should be 4 floats, representing xyzw
 		// eg: attribute 1 is expected to be the vertices color. it should be 4 floats, representing rgba
 		// eg: attribute 2 is expected to be the vertices texture coordinate. it should be 2 floats, representing U and V
 		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::PositionOffset);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::ColourOffset);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TexCoord1Offset);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TexCoord1Offset);
 
 		glBindVertexArray(0);
 	}
@@ -272,18 +304,14 @@ void Tutorial12_ShadowMap::UpdateFBXSceneResource(FBXFile *a_pScene)
 
 void Tutorial12_ShadowMap::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a_view, glm::mat4 a_projection)
 {
-	// activate a shader
-	glUseProgram(m_shader);
+	// Shadow Map -------------------------------------------------------------
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(m_shadowProgram);
+	setupLightAndShadowMatrix();
+	GLuint uDepthMVP = glGetUniformLocation(m_shadowProgram, "depthMVP");
+	glUniformMatrix4fv(uDepthMVP, 1, false, glm::value_ptr(m_shadowViewProjectionMatrix));
 
-	// get the location of uniforms on the shader
-	GLint uDiffuseTexture = glGetUniformLocation(m_shader, "DiffuseTexture");
-	GLint uDiffuseColor = glGetUniformLocation(m_shader, "DiffuseColor");
-
-	GLint uModel = glGetUniformLocation(m_shader, "Model");
-	GLint uView = glGetUniformLocation(m_shader, "View");
-	GLint uProjection = glGetUniformLocation(m_shader, "Projection");
-
-	// for each mesh in the model
 	for (int i = 0; i < a_pScene->getMeshCount(); ++i)
 	{
 		// get the current mesh
@@ -292,30 +320,107 @@ void Tutorial12_ShadowMap::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a
 		// get the render data attached to the m_userData pointer for this mesh
 		OGL_FBX_RenderData *ro = (OGL_FBX_RenderData *)mesh->m_userData;
 
-		// Bind the texture to one of the ActiveTextures
-		// if your shader supported multiple textures, you would bind each texture to a new Active Texture ID here
-		/*glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
-		*/
-		// reset back to the default active texture
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
 
-		// TELL THE SHADER WHICH TEXTURE TO USE
-		glUniform1i(uDiffuseTexture, 1);
-
-		// send the Model, View and Projection Matrices to the shader
-		glUniformMatrix4fv(uModel, 1, false, glm::value_ptr(mesh->m_globalTransform));
-		glUniformMatrix4fv(uView, 1, false, glm::value_ptr(a_view));
-		glUniformMatrix4fv(uProjection, 1, false, glm::value_ptr(a_projection));
-
-		// bind out vertex array object
-		// remember in the initialize function, we bound the VBO and IBO to the VAO
-		// so when we bind the VAO, openGL knows what vertices, indices and vertex attributes 
-		// to send to the shader
 		glBindVertexArray(ro->VAO);
 		glDrawElements(GL_TRIANGLES, mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// Debug Display
+	DisplayDebugShadow();
+
+	// Standard Scene ---------------------------------------------------------
+
+	//// activate a shader
+	//glUseProgram(m_shader);
+
+	//// get the location of uniforms on the shader
+	//GLint uDiffuseTexture = glGetUniformLocation(m_shader, "DiffuseTexture");
+	//GLint uDiffuseColor = glGetUniformLocation(m_shader, "DiffuseColor");
+
+	//GLint uModel = glGetUniformLocation(m_shader, "Model");
+	//GLint uView = glGetUniformLocation(m_shader, "View");
+	//GLint uProjection = glGetUniformLocation(m_shader, "Projection");
+
+	//// for each mesh in the model
+	//for (int i = 0; i < a_pScene->getMeshCount(); ++i)
+	//{
+	//	// get the current mesh
+	//	FBXMeshNode *mesh = a_pScene->getMeshByIndex(i);
+
+	//	// get the render data attached to the m_userData pointer for this mesh
+	//	OGL_FBX_RenderData *ro = (OGL_FBX_RenderData *)mesh->m_userData;
+
+	//	// Bind the texture to one of the ActiveTextures
+	//	// if your shader supported multiple textures, you would bind each texture to a new Active Texture ID here
+	//	/*glActiveTexture(GL_TEXTURE1);
+	//	glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
+	//	*/
+	//	// reset back to the default active texture
+	//	glActiveTexture(GL_TEXTURE0);
+
+	//	// TELL THE SHADER WHICH TEXTURE TO USE
+	//	glUniform1i(uDiffuseTexture, 1);
+
+	//	// send the Model, View and Projection Matrices to the shader
+	//	glUniformMatrix4fv(uModel, 1, false, glm::value_ptr(mesh->m_globalTransform));
+	//	glUniformMatrix4fv(uView, 1, false, glm::value_ptr(a_view));
+	//	glUniformMatrix4fv(uProjection, 1, false, glm::value_ptr(a_projection));
+
+	//	// bind out vertex array object
+	//	// remember in the initialize function, we bound the VBO and IBO to the VAO
+	//	// so when we bind the VAO, openGL knows what vertices, indices and vertex attributes 
+	//	// to send to the shader
+	//	glBindVertexArray(ro->VAO);
+	//	glDrawElements(GL_TRIANGLES, mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
+	//}
+
 	// finished rendering meshes, disable shader
 	glUseProgram(0);
+}
+
+void Tutorial12_ShadowMap::InitQuad()
+{
+	glGenVertexArrays(1, &m_quadVAO);
+	glBindVertexArray(m_quadVAO);
+
+	// create a 200x200 2D GUI quad (resize it to screen-space!)
+	glm::vec2 size(200, 200);
+	size.x /= DEFAULT_SCREENWIDTH;
+	size.y /= DEFAULT_SCREENHEIGHT;
+	size *= 2;
+
+	// setup the quad in the top corner
+	float quadVertices[] = {
+		-1.0f, 1.0f - size.y, 0.0f, 1.0f, 0, 0,
+		-1.0f + size.x, 1.0f - size.y, 0.0f, 1.0f, 1, 0,
+		-1.0f, 1.0f, 0.0f, 1.0f, 0, 1,
+
+		-1.0f, 1.0f, 0.0f, 1.0f, 0, 1,
+		-1.0f + size.x, 1.0f - size.y, 0.0f, 1.0f, 1, 0,
+		-1.0f + size.x, 1.0f, 0.0f, 1.0f, 1, 1,
+	};
+
+	glGenBuffers(1, &m_quadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)* 6 * 6, quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(float)* 6, 0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float)* 6, ((char*)0) + 16);
+	glBindVertexArray(0);
+}
+
+void Tutorial12_ShadowMap::DisplayDebugShadow()
+{
+	glUseProgram(m_quadProgram);
+	unsigned int texLoc = glGetUniformLocation(m_quadProgram, "shadowMap");
+	glUniform1i(texLoc, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
+	glBindVertexArray(m_quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }

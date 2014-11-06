@@ -22,6 +22,7 @@ protected:
 	glm::mat4	m_cameraMatrix;
 	glm::mat4	m_projectionMatrix;
 
+	// fbx ------------------------------------
 	FBXFile *m_fbx;
 
 	void InitFBXSceneResource(FBXFile *a_pScene);
@@ -36,11 +37,20 @@ protected:
 		unsigned int VAO;
 	};
 
+	// debug quad ------------------------------
+	void InitQuad();
+	void DisplayDebugShadow();
+
+	unsigned int m_quadVBO, m_quadVAO;
+	unsigned int m_quadProgram, m_quadVert, m_quadFrag;
+
+
+
 	unsigned int m_programID;
 
 
 	void createShadowBuffer();
-	void setupLightAndShadowMatrix(float count);
+	void setupLightAndShadowMatrix();
 
 	glm::vec4 m_lightDirection;
 	glm::mat4 m_shadowViewProjectionMatrix;
@@ -48,4 +58,6 @@ protected:
 	int m_shadowWidth, m_shadowHeight;
 
 	unsigned int m_shadowFramebuffer, m_shadowTexture;
+
+	unsigned int m_shadowProgram, m_shadowVert, m_shadowFrag;
 };
