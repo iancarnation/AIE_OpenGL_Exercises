@@ -44,8 +44,8 @@ bool Tutorial9_Animation::onCreate(int a_argc, char* a_argv[])
 	glEnable(GL_CULL_FACE);
 
 	// load shader internally calls glCreateShader...
-	m_vertShader = Utility::loadShader("../../assets/shaders/animation2.vert", GL_VERTEX_SHADER);
-	m_fragShader= Utility::loadShader("../../assets/shaders/animation2.frag", GL_FRAGMENT_SHADER);
+	m_vertShader = Utility::loadShader("../../assets/shaders/animation.vert", GL_VERTEX_SHADER);
+	m_fragShader= Utility::loadShader("../../assets/shaders/animation.frag", GL_FRAGMENT_SHADER);
 
 	m_programID = Utility::createProgram(m_vertShader, 0, 0, 0, m_fragShader);
 

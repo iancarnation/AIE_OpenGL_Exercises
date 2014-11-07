@@ -51,7 +51,9 @@ protected:
 
 	void createShadowBuffer();
 	void setupLightAndShadowMatrix();
+	void updateLightAndShadowMatrix(glm::vec3 a_lightPos, glm::vec4 a_lightDir);
 
+	glm::vec3 m_lightPosition;
 	glm::vec4 m_lightDirection;
 	glm::mat4 m_shadowViewProjectionMatrix;
 
@@ -60,4 +62,8 @@ protected:
 	unsigned int m_shadowFramebuffer, m_shadowTexture;
 
 	unsigned int m_shadowProgram, m_shadowVert, m_shadowFrag;
+
+	float scrubber = 0.0f;
+	float distCam = 2.5f;
+
 };

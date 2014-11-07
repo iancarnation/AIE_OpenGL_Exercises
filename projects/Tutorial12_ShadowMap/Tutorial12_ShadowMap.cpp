@@ -33,23 +33,30 @@ bool Tutorial12_ShadowMap::onCreate(int a_argc, char* a_argv[])
 	// create a perspective projection matrix with a 90 degree field-of-view and widescreen aspect ratio
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, width/(float)height, 0.1f, 1000.0f);
 
+	// setup light direction and shadow matrix
+	m_lightPosition = glm::vec3(5.0f, 5.0f, 0);
+	m_lightDirection = glm::normalize(glm::vec4(-m_lightPosition, 0));
+
 	// set the clear colour and enable depth testing and backface culling
 	glClearColor(0.25f,0.25f,0.25f,1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// shadow map shader ------------------------------------------------------
+	// shadow map ------------------------------------------------------
 	m_shadowVert = Utility::loadShader("../../assets/shaders/Tutorial12_ShadowRender.vert", GL_VERTEX_SHADER);
 	m_shadowFrag = Utility::loadShader("../../assets/shaders/Tutorial12_ShadowRender.frag", GL_FRAGMENT_SHADER);
 	
 	const char* inputs[] = { "Position" };
+	const char* outputs[] = { "depth" };
 	
-	m_shadowProgram = Utility::createProgram(m_shadowVert, 0, 0, 0, m_shadowFrag, 1, inputs);
+	m_shadowProgram = Utility::createProgram(m_shadowVert, 0, 0, 0, m_shadowFrag, 1, inputs, 1, outputs);
 
 	glDeleteShader(m_shadowVert);
 	glDeleteShader(m_shadowFrag);
 
-	// debug display shader ---------------------------------------------------
+	createShadowBuffer();
+
+	// debug display ---------------------------------------------------
 	m_quadVert = Utility::loadShader("../../assets/shaders/Tutorial12_DebugQuad.vert", GL_VERTEX_SHADER);
 	m_quadVert = Utility::loadShader("../../assets/shaders/Tutorial12_DebugQuad.frag", GL_FRAGMENT_SHADER);
 	
@@ -61,13 +68,16 @@ bool Tutorial12_ShadowMap::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(m_quadVert);
 	glDeleteShader(m_quadFrag);
 
+	// make debug display quad
+	InitQuad();
+
 	// scene shader -----------------------------------------------------------
-	const char* aszInputs[] = { "Position", "Color", "TexCoord1" };
-	const char* aszOutputs[] = { "outColor" };
+	const char* aszInputs[] = { "Position", "Normals", "TexCoord" };
+	const char* aszOutputs[] = { "FragColor" };
 
 	// load shader internally calls glCreateShader...
-	GLuint vshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.vert", GL_VERTEX_SHADER);
-	GLuint fshader = Utility::loadShader("../../assets/shaders/Tutorial2_FBX.frag", GL_FRAGMENT_SHADER);
+	GLuint vshader = Utility::loadShader("../../assets/shaders/Tutorial12_Scene.vert", GL_VERTEX_SHADER);
+	GLuint fshader = Utility::loadShader("../../assets/shaders/Tutorial12_Scene.frag", GL_FRAGMENT_SHADER);
 
 	m_programID = Utility::createProgram(vshader, 0, 0, 0, fshader, 3, aszInputs, 1, aszOutputs);
 
@@ -75,18 +85,14 @@ bool Tutorial12_ShadowMap::onCreate(int a_argc, char* a_argv[])
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
-	createShadowBuffer();
-
 	// load FBX ----------------------------------------------------------------
 	m_fbx = new FBXFile();
-	//m_fbx->load("../../assets/models/ruinedtank/tank.fbx", FBXFile::UNITS_CENTIMETER);
-	m_fbx->load("../../assets/models/sphere.fbx", FBXFile::UNITS_CENTIMETER);
+	m_fbx->load("../../assets/models/ruinedtank/tank.fbx", FBXFile::UNITS_CENTIMETER);
+	//m_fbx->load("../../assets/models/soulspear/soulspear.fbx", FBXFile::UNITS_CENTIMETER);
+	//m_fbx->load("../../assets/models/sphere.fbx", FBXFile::UNITS_CENTIMETER);
 	m_fbx->initialiseOpenGLTextures();
 
 	InitFBXSceneResource(m_fbx);
-
-	// make debug display quad
-	InitQuad();
 
 	return true;
 }
@@ -102,15 +108,37 @@ void Tutorial12_ShadowMap::onUpdate(float a_deltaTime)
 	// add an identity matrix gizmo
 	//Gizmos::addTransform( glm::mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1) );
 
-	// add a 20x20 grid on the XZ-plane
-	for ( int i = 0 ; i < 21 ; ++i )
+	//// add a 20x20 grid on the XZ-plane
+	//for ( int i = 0 ; i < 21 ; ++i )
+	//{
+	//	Gizmos::addLine( glm::vec3(-10 + i, 0, 10), glm::vec3(-10 + i, 0, -10), 
+	//					 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
+	//	
+	//	Gizmos::addLine( glm::vec3(10, 0, -10 + i), glm::vec3(-10, 0, -10 + i), 
+	//					 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
+	//}
+
+
+	// light movement from @terrehbyte
+	if (glfwGetKey(m_window, GLFW_KEY_Z) == GLFW_PRESS)
 	{
-		Gizmos::addLine( glm::vec3(-10 + i, 0, 10), glm::vec3(-10 + i, 0, -10), 
-						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
-		
-		Gizmos::addLine( glm::vec3(10, 0, -10 + i), glm::vec3(-10, 0, -10 + i), 
-						 i == 10 ? glm::vec4(1,1,1,1) : glm::vec4(0,0,0,1) );
+		scrubber += a_deltaTime;
 	}
+	if (glfwGetKey(m_window, GLFW_KEY_X) == GLFW_PRESS)
+	{
+		scrubber -= a_deltaTime;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_C) == GLFW_PRESS)
+	{
+		distCam += a_deltaTime * 10;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_V) == GLFW_PRESS)
+	{
+		distCam -= a_deltaTime * 10;
+	}
+	m_lightPosition.x = std::cos(scrubber) * distCam;
+	m_lightPosition.z = std::sin(scrubber) * distCam;
+	updateLightAndShadowMatrix(m_lightPosition, m_lightDirection);
 
 	UpdateFBXSceneResource(m_fbx);
 
@@ -163,53 +191,6 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void Tutorial12_ShadowMap::createShadowBuffer()
-{
-	// resolution of the texture to put our shadow map in
-	m_shadowWidth = 1024;
-	m_shadowHeight = 1024;
-
-	// framebuffer
-	glGenFramebuffers(1, &m_shadowFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer);
-
-	// Depth texture
-	glGenTextures(1, &m_shadowTexture);
-	glBindTexture(GL_TEXTURE_2D, m_shadowTexture);	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowTexture, 0);
-
-	glDrawBuffer(GL_NONE); // no color buffer is drawn to
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		printf("depth buffer not created");
-	}
-	else
-	{
-		printf("Success! created depth buffer\n");
-	}
-
-	// return to back-buffer rendering
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Tutorial12_ShadowMap::setupLightAndShadowMatrix()
-{
-	// setup light direction and shadow matrix
-	glm::vec3 lightPosition = glm::vec3(1.0f, 1.0f, 0);
-	m_lightDirection = glm::normalize(glm::vec4(-lightPosition, 0));
-
-	glm::mat4 depthViewMatrix = glm::lookAt(lightPosition, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3, 3, -3, 3, -50, 50);
-	m_shadowViewProjectionMatrix = depthProjectionMatrix * depthViewMatrix;
-}
-
 void Tutorial12_ShadowMap::InitFBXSceneResource(FBXFile *a_pScene)
 {
 	// how many meshes and materials are stored within the fbx file
@@ -247,15 +228,15 @@ void Tutorial12_ShadowMap::InitFBXSceneResource(FBXFile *a_pScene)
 		// enable the attribute locations that will be used on our shaders
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
-		//glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(2);
 
 		// tell our shaders where the information within our buffers lie
 		// eg: attribute 0 is expected to be the vertices position. it should be 4 floats, representing xyzw
 		// eg: attribute 1 is expected to be the vertices color. it should be 4 floats, representing rgba
 		// eg: attribute 2 is expected to be the vertices texture coordinate. it should be 2 floats, representing U and V
 		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::PositionOffset);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TexCoord1Offset);
-
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::NormalOffset);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FBXVertex), (char*)FBXVertex::TexCoord1Offset);
 		glBindVertexArray(0);
 	}
 }
@@ -307,8 +288,12 @@ void Tutorial12_ShadowMap::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a
 	// Shadow Map -------------------------------------------------------------
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(m_shadowProgram);
-	setupLightAndShadowMatrix();
+	//glCullFace(GL_FRONT);
+
+	//setupLightAndShadowMatrix();
+	updateLightAndShadowMatrix(m_lightPosition, m_lightDirection);
 	GLuint uDepthMVP = glGetUniformLocation(m_shadowProgram, "depthMVP");
 	glUniformMatrix4fv(uDepthMVP, 1, false, glm::value_ptr(m_shadowViewProjectionMatrix));
 
@@ -320,66 +305,141 @@ void Tutorial12_ShadowMap::RenderFBXSceneResource(FBXFile *a_pScene, glm::mat4 a
 		// get the render data attached to the m_userData pointer for this mesh
 		OGL_FBX_RenderData *ro = (OGL_FBX_RenderData *)mesh->m_userData;
 
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
 
 		glBindVertexArray(ro->VAO);
-		glDrawElements(GL_TRIANGLES, mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, (unsigned int)mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glCullFace(GL_BACK);
 
 	// Debug Display
 	DisplayDebugShadow();
 
 	// Standard Scene ---------------------------------------------------------
 
-	//// activate a shader
-	//glUseProgram(m_shader);
+	// get the view mat from world-space camera mat
+	glm::mat4 viewMatrix = glm::inverse(m_cameraMatrix);
 
-	//// get the location of uniforms on the shader
-	//GLint uDiffuseTexture = glGetUniformLocation(m_shader, "DiffuseTexture");
-	//GLint uDiffuseColor = glGetUniformLocation(m_shader, "DiffuseColor");
+	// activate a shader
+	glUseProgram(m_programID);
 
-	//GLint uModel = glGetUniformLocation(m_shader, "Model");
-	//GLint uView = glGetUniformLocation(m_shader, "View");
-	//GLint uProjection = glGetUniformLocation(m_shader, "Projection");
+	// bind shadow map texture
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
 
-	//// for each mesh in the model
-	//for (int i = 0; i < a_pScene->getMeshCount(); ++i)
-	//{
-	//	// get the current mesh
-	//	FBXMeshNode *mesh = a_pScene->getMeshByIndex(i);
+	// get the location of uniforms on the shader
+	GLuint uMVP = glGetUniformLocation(m_programID, "MVP");
+	GLuint uModel = glGetUniformLocation(m_programID, "model");
+	GLuint uLightMVP = glGetUniformLocation(m_programID, "lightMVP");
 
-	//	// get the render data attached to the m_userData pointer for this mesh
-	//	OGL_FBX_RenderData *ro = (OGL_FBX_RenderData *)mesh->m_userData;
+	GLuint uAmbientLight = glGetUniformLocation(m_programID, "ambientLight");
+	GLuint uLightDir = glGetUniformLocation(m_programID, "lightDir");
 
-	//	// Bind the texture to one of the ActiveTextures
-	//	// if your shader supported multiple textures, you would bind each texture to a new Active Texture ID here
-	//	/*glActiveTexture(GL_TEXTURE1);
-	//	glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
-	//	*/
-	//	// reset back to the default active texture
-	//	glActiveTexture(GL_TEXTURE0);
+	GLuint uDiffuseMap = glGetUniformLocation(m_programID, "diffuseMap");
+	GLuint uShadowMap = glGetUniformLocation(m_programID, "shadowMap");
 
-	//	// TELL THE SHADER WHICH TEXTURE TO USE
-	//	glUniform1i(uDiffuseTexture, 1);
+	glm::mat4 MVP;
 
-	//	// send the Model, View and Projection Matrices to the shader
-	//	glUniformMatrix4fv(uModel, 1, false, glm::value_ptr(mesh->m_globalTransform));
-	//	glUniformMatrix4fv(uView, 1, false, glm::value_ptr(a_view));
-	//	glUniformMatrix4fv(uProjection, 1, false, glm::value_ptr(a_projection));
 
-	//	// bind out vertex array object
-	//	// remember in the initialize function, we bound the VBO and IBO to the VAO
-	//	// so when we bind the VAO, openGL knows what vertices, indices and vertex attributes 
-	//	// to send to the shader
-	//	glBindVertexArray(ro->VAO);
-	//	glDrawElements(GL_TRIANGLES, mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
-	//}
+	// for each mesh in the model
+	for (int i = 0; i < a_pScene->getMeshCount(); ++i)
+	{
+		// get the current mesh
+		FBXMeshNode *mesh = a_pScene->getMeshByIndex(i);
+
+		// get the render data attached to the m_userData pointer for this mesh
+		OGL_FBX_RenderData *ro = (OGL_FBX_RenderData *)mesh->m_userData;
+
+		// Bind Textures
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, mesh->m_material->textures[FBXMaterial::DiffuseTexture]->handle);
+		
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
+		
+		glUniform1i(uDiffuseMap, 2);
+		glUniform1i(uShadowMap, 3);
+
+		MVP = m_projectionMatrix * viewMatrix * mesh->m_globalTransform;
+
+		// send the Model, View and Projection Matrices to the shader
+		glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(MVP));
+		glUniformMatrix4fv(uModel, 1, false, glm::value_ptr(mesh->m_globalTransform));
+
+		glUniformMatrix4fv(uLightMVP, 1, false, glm::value_ptr(m_shadowViewProjectionMatrix * mesh->m_globalTransform));
+
+		glUniform3f(uAmbientLight, 0.5f, 0.5f, 0.5f);
+		glUniform4fv(uLightDir, 1, glm::value_ptr(m_lightDirection));
+
+		// bind out vertex array object
+		// remember in the initialize function, we bound the VBO and IBO to the VAO
+		// so when we bind the VAO, openGL knows what vertices, indices and vertex attributes 
+		// to send to the shader
+		glBindVertexArray(ro->VAO);
+		glDrawElements(GL_TRIANGLES, (unsigned int)mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
+	}
 
 	// finished rendering meshes, disable shader
 	glUseProgram(0);
+}
+
+void Tutorial12_ShadowMap::createShadowBuffer()
+{
+	// resolution of the texture to put our shadow map in
+	m_shadowWidth = 1024;
+	m_shadowHeight = 1024;
+
+	// framebuffer
+	glGenFramebuffers(1, &m_shadowFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer);
+
+	// Depth texture
+	glGenTextures(1, &m_shadowTexture);
+	glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, m_shadowWidth, m_shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowTexture, 0);
+
+	glDrawBuffer(GL_NONE); // no color buffer is drawn to
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		printf("depth buffer not created");
+	}
+	else
+	{
+		printf("Success! created depth buffer\n");
+	}
+
+	// return to back-buffer rendering
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+//void Tutorial12_ShadowMap::setupLightAndShadowMatrix()
+//{
+//	// setup light direction and shadow matrix
+//	glm::vec3 lightPosition = glm::vec3(5.0f, 5.0f, 0);
+//	m_lightDirection = glm::normalize(glm::vec4(-m_lightPosition, 0));
+//
+//	glm::mat4 depthViewMatrix = glm::lookAt(lightPosition, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+//	//glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, -20, 20, 0, 20);
+//	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3, 3, -3, 3, -50, 50);
+//	m_shadowViewProjectionMatrix = depthProjectionMatrix * depthViewMatrix;
+//}
+
+void Tutorial12_ShadowMap::updateLightAndShadowMatrix(glm::vec3 a_lightPos, glm::vec4 a_lightDir)
+{
+	glm::mat4 depthViewMatrix = glm::lookAt(a_lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	//glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, -20, 20, 0, 20);
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3, 3, -3, 3, -50, 50);
+	m_shadowViewProjectionMatrix = depthProjectionMatrix * depthViewMatrix;
 }
 
 void Tutorial12_ShadowMap::InitQuad()
@@ -423,4 +483,6 @@ void Tutorial12_ShadowMap::DisplayDebugShadow()
 	glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
 	glBindVertexArray(m_quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glUseProgram(0);
 }
